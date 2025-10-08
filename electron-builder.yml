@@ -1,0 +1,92 @@
+appId: com.appbackuprestore.app
+productName: App Backup Restore
+directories:
+  output: release
+  buildResources: build
+artifactName: "abr-${version}-${os}-${arch}.${ext}"
+portable:
+  artifactName: "abr-${version}-${os}-${arch}-portable.${ext}"
+publish:
+  provider: github
+  owner: kakehashi-inc
+  repo: https://github.com/kakehashi-inc/app_backup_restore
+  releaseType: release
+releaseInfo:
+  releaseName: "v${version}"
+  releaseNotes: |
+    ## New Features
+
+    - nothing
+
+    ## Bug Fixes
+
+    - nothing
+
+files:
+  - dist/**/*
+  - public/**/*
+  - "!**/*.ts"
+  - "!**/*.tsx"
+  - "!**/*.map"
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+  - "!**/node_modules/*.d.ts"
+  - "!**/node_modules/.bin"
+
+win:
+  icon: public/icon.ico
+  executableName: abr
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+    - target: portable
+      arch:
+        - x64
+        - arm64
+
+nsis:
+  shortcutName: App Backup Restore
+  buildUniversalInstaller: false
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  deleteAppDataOnUninstall: true
+
+mac:
+  category: public.app-category.developer-tools
+  icon: public/icon.png
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+
+linux:
+  icon: public/icon.png
+  category: Development
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: rpm
+      arch:
+        - x64
+        - arm64
+  desktop:
+    entry:
+      Name: App Backup Restore
+      Comment: "GUI to manage App Backup Restore."
+      Categories: Development;
