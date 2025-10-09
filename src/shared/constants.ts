@@ -15,10 +15,6 @@ export function getConfigPath(): string {
     return path.join(getAppRootDir(), 'config.json');
 }
 
-export function getCacheDir(): string {
-    return path.join(getAppRootDir(), 'cache');
-}
-
 export const BACKUP_METADATA_FILENAME = 'backup_metadata.json';
 
 export const BACKUP_FILE_NAMES = {
@@ -38,6 +34,7 @@ export const IPC_CHANNELS = {
     BACKUP_RUN: 'backup:run',
     BACKUP_RUN_SELECTED: 'backup:runSelected',
     BACKUP_GET_METADATA: 'backup:getMetadata',
+    BACKUP_READ_LIST: 'backup:readList',
     RESTORE_RUN: 'restore:run',
     TASK_PROGRESS: 'task:progress',
     APP_GET_INFO: 'app:getInfo',

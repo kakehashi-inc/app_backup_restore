@@ -25,4 +25,9 @@ export default {
     selectAll: 'Select All',
     clearAll: 'Clear All',
     ok: 'OK',
+    selectInstalled: 'Select Installed',
+    selectNotInstalled: 'Select Not Installed',
+    statusInstalled: 'Installed',
+    statusNotInstalled: 'Not Installed',
+    loading: 'Loading…',
 };

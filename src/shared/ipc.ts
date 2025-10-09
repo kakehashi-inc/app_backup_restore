@@ -20,6 +20,7 @@ export type IpcApi = {
     validateBackupDirectory?(): Promise<boolean>;
     detectManagers(): Promise<DetectResult>;
     listPackages(managerId: ManagerId): Promise<WingetItem[] | MsStoreItem[] | ScoopItem[] | ChocolateyItem[]>;
+    readBackupList?(managerId: ManagerId): Promise<any[]>;
     runBackup(managers?: ManagerId[]): Promise<{ written: string[]; metadataUpdated: boolean }>;
     runBackupSelected?(
         managerId: ManagerId,

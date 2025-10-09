@@ -61,7 +61,7 @@ export async function runBackupSelected(
 ): Promise<{ written: string[]; metadataUpdated: boolean }> {
     const written: string[] = [];
     if (manager === 'winget' || manager === 'msstore') {
-        // For list-based backups we always write full list; selection matters on restore
+        // Always write full list for winget/msstore
         return runBackup(backupDir, [manager]);
     }
     if (manager === 'scoop') {
@@ -82,4 +82,15 @@ export async function runBackupSelected(
     (metadata as any)[manager] = { last_backup: new Date().toISOString() };
     writeJsonFile(metadataPath, metadata);
     return { written, metadataUpdated: true };
+}
+
+export function readBackupList<T = any>(backupDir: string, manager: ManagerId): T[] {
+    const fileMap: Record<ManagerId, string> = {
+        winget: BACKUP_FILE_NAMES.winget,
+        msstore: BACKUP_FILE_NAMES.msstore,
+        scoop: BACKUP_FILE_NAMES.scoop,
+        chocolatey: BACKUP_FILE_NAMES.chocolatey,
+    } as const;
+    const file = path.join(backupDir, fileMap[manager]);
+    return readJsonFile<T[]>(file, []);
 }

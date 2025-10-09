@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { app, dialog } from 'electron';
-import { getAppRootDir, getCacheDir, getConfigPath } from '../../shared/constants';
+import { getAppRootDir, getConfigPath } from '../../shared/constants';
 import type { AppConfig } from '../../shared/types';
 import { ensureDirSync, readJsonFile, writeJsonFile } from '../utils/fsx';
 
@@ -10,7 +10,6 @@ const DEFAULT_CONFIG: AppConfig = {
 
 export function ensureAppDirectories() {
     ensureDirSync(getAppRootDir());
-    ensureDirSync(getCacheDir());
 }
 
 export function loadConfig(): AppConfig {

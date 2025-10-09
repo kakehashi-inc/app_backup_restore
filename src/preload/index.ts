@@ -12,6 +12,7 @@ const IPC_CHANNELS = {
     BACKUP_RUN: 'backup:run',
     BACKUP_RUN_SELECTED: 'backup:runSelected',
     BACKUP_GET_METADATA: 'backup:getMetadata',
+    BACKUP_READ_LIST: 'backup:readList',
     RESTORE_RUN: 'restore:run',
     TASK_PROGRESS: 'task:progress',
     APP_GET_INFO: 'app:getInfo',
@@ -42,6 +43,10 @@ const api: IpcApi = {
     },
     async listPackages(managerId) {
         return ipcRenderer.invoke(IPC_CHANNELS.LIST_PACKAGES, managerId);
+    },
+    async readBackupList(managerId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_READ_LIST, managerId);
     },
     async runBackup(managers) {
         return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RUN, managers);

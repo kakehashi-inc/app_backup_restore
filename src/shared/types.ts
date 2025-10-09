@@ -1,5 +1,7 @@
 export type ManagerId = 'winget' | 'msstore' | 'scoop' | 'chocolatey';
 
+export type EditorId = 'vscode' | 'cursor' | 'voideditor';
+
 export type WingetItem = {
     PackageId: string;
     Name: string;
@@ -61,4 +63,12 @@ export type ManagerRow = {
     name: string;
     detected: boolean;
     lastBackup?: string;
+};
+
+export type MergedPackageItem = {
+    id: string; // PackageId or Name
+    name: string; // Display name
+    version?: string;
+    isInstalled: boolean; // true if currently installed, false if backup-only
+    source?: 'installed' | 'backup' | 'both';
 };

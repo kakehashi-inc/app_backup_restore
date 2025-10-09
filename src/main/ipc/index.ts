@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from '../../shared/constants';
 import { chooseBackupDirectory, loadConfig, saveConfig, validateBackupDirectory } from '../services/config';
 import { detectManagers, listChocolatey, listMsStore, listScoop, listWinget } from '../services/managers';
-import { runBackup, getBackupMetadata, runBackupSelected } from '../services/backup';
+import { runBackup, getBackupMetadata, runBackupSelected, readBackupList } from '../services/backup';
 import { runSequentialInstall, writeInstallScript } from '../services/restore';
 import type { ManagerId, RestoreRequest } from '../../shared/types';
 
@@ -52,6 +52,12 @@ export function registerIpcHandlers() {
         const cfg = loadConfig();
         if (!cfg.backupDirectory) return {};
         return getBackupMetadata(cfg.backupDirectory);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.BACKUP_READ_LIST, async (_e, manager: ManagerId) => {
+        const cfg = loadConfig();
+        if (!cfg.backupDirectory) return [];
+        return readBackupList(cfg.backupDirectory, manager);
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_RUN_SELECTED, async (_e, manager: ManagerId, identifiers: string[]) => {

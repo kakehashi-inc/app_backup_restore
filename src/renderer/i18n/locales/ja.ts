@@ -25,4 +25,9 @@ export default {
     selectAll: '全選択',
     clearAll: '全解除',
     ok: '決定',
+    selectInstalled: 'インストール済みを選択',
+    selectNotInstalled: '未インストールを選択',
+    statusInstalled: 'インストール済み',
+    statusNotInstalled: '未インストール',
+    loading: '取得中…',
 };
