@@ -2,7 +2,15 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { parseStringPromise } from 'xml2js';
-import type { ChocolateyItem, MsStoreItem, ScoopItem, WingetItem } from '../../shared/types';
+import { BrowserWindow } from 'electron';
+import type {
+    ChocolateyItem,
+    MsStoreItem,
+    ScoopItem,
+    WingetItem,
+    VSCodeExtensionItem,
+    VSCodeId,
+} from '../../shared/types';
 import { isCommandAvailable, runCommand } from '../utils/exec';
 import { readJsonFile, writeJsonFile } from '../utils/fsx';
 import { loadConfig } from './config';
@@ -13,7 +21,7 @@ type WingetCache = Record<string, { package_id: string; cached_at: string; displ
 function resolveCacheDir(): string {
     const cfg = loadConfig();
     const base = cfg.backupDirectory;
-    const dir = path.join(base, 'cache');
+    const dir = path.join(base, '.cache');
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     return dir;
 }
@@ -121,16 +129,22 @@ async function getWingetDisplayName(packageId: string): Promise<string> {
 }
 
 export async function detectManagers() {
-    const [winget, scoop, choco] = await Promise.all([
+    const [winget, scoop, choco, vscode, cursor, voideditor] = await Promise.all([
         isCommandAvailable('winget'),
         isCommandAvailable('scoop'),
         isCommandAvailable('choco'),
+        isCommandAvailable('code'),
+        isCommandAvailable('cursor'),
+        isCommandAvailable('void'),
     ]);
     return {
         winget,
         msstore: winget, // msstore listing depends on winget source
         scoop,
         chocolatey: choco,
+        vscode,
+        cursor,
+        voideditor,
         wslDetected: os.platform() === 'win32', // simple hint
     };
 }
@@ -162,10 +176,20 @@ async function getWingetSourceApps(source: string): Promise<WingetItem[]> {
         }
 
         const items: WingetItem[] = [];
-        for (const p of packages) {
+        const total = packages.length;
+        for (let i = 0; i < packages.length; i++) {
+            const p = packages[i];
             const pkgId = p?.PackageIdentifier as string | undefined;
             const version = (p?.Version as string | undefined) || 'latest';
             if (!pkgId) continue;
+
+            // Send progress update
+            const progressMessage = `Getting display names for ${source} packages: ${i + 1}/${total}`;
+            const mainWindow = BrowserWindow.getFocusedWindow();
+            if (mainWindow) {
+                mainWindow.webContents.send('task:progress', progressMessage);
+            }
+
             const name = await getWingetDisplayName(pkgId);
             items.push({ PackageId: pkgId, Name: name, Version: version });
         }
@@ -224,5 +248,93 @@ export async function listChocolatey(): Promise<ChocolateyItem[]> {
         try {
             await fs.promises.rm(tmp, { recursive: true, force: true });
         } catch {}
+    }
+}
+
+export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
+    const commandMap: Record<VSCodeId, string> = {
+        vscode: 'code',
+        cursor: 'cursor',
+        voideditor: 'void',
+    };
+
+    const command = commandMap[vscodeId];
+    if (!command) return [];
+
+    const available = await isCommandAvailable(command);
+    if (!available) return [];
+
+    try {
+        const { stdout } = await runCommand(command, ['--list-extensions', '--show-versions']);
+        const lines = stdout
+            .trim()
+            .split('\n')
+            .filter(line => line.trim());
+
+        const items: VSCodeExtensionItem[] = lines.map(line => {
+            const match = line.match(/^(.+?)@(.+)$/);
+            if (match) {
+                return {
+                    id: match[1],
+                    version: match[2],
+                };
+            }
+            return {
+                id: line,
+                version: undefined,
+            };
+        });
+
+        return items;
+    } catch (error) {
+        console.error(`Failed to list extensions for ${vscodeId}:`, error);
+        return [];
+    }
+}
+
+export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
+    // Only works on Windows
+    if (os.platform() !== 'win32') return [];
+
+    const commandMap: Record<VSCodeId, string> = {
+        vscode: 'code',
+        cursor: 'cursor',
+        voideditor: 'void',
+    };
+
+    const command = commandMap[vscodeId];
+    if (!command) return [];
+
+    // Check if WSL is available
+    const wslAvailable = await isCommandAvailable('wsl');
+    if (!wslAvailable) return [];
+
+    try {
+        const { stdout, code } = await runCommand('wsl', ['-e', command, '--list-extensions', '--show-versions']);
+        if (code !== 0) return [];
+
+        const lines = stdout
+            .trim()
+            .split('\n')
+            .filter(line => line.trim());
+
+        const items: VSCodeExtensionItem[] = lines.map(line => {
+            const match = line.match(/^(.+?)@(.+)$/);
+            if (match) {
+                return {
+                    id: match[1],
+                    version: match[2],
+                };
+            }
+            return {
+                id: line,
+                version: undefined,
+            };
+        });
+
+        return items;
+    } catch (error) {
+        console.error(`Failed to list WSL extensions for ${vscodeId}:`, error);
+        return [];
     }
 }

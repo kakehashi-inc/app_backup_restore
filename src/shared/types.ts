@@ -1,6 +1,6 @@
 export type ManagerId = 'winget' | 'msstore' | 'scoop' | 'chocolatey';
 
-export type EditorId = 'vscode' | 'cursor' | 'voideditor';
+export type VSCodeId = 'vscode' | 'cursor' | 'voideditor';
 
 export type WingetItem = {
     PackageId: string;
@@ -22,6 +22,11 @@ export type ChocolateyItem = {
     Version: string;
 };
 
+export type VSCodeExtensionItem = {
+    id: string; // Extension identifier (e.g., ms-python.python)
+    version?: string;
+};
+
 export type PackageList = {
     winget?: WingetItem[];
     msstore?: MsStoreItem[];
@@ -31,6 +36,8 @@ export type PackageList = {
 
 export type AppConfig = {
     backupDirectory: string; // absolute path to backup root selected by user
+    language?: string; // app language (e.g., 'ja', 'en')
+    darkMode?: boolean; // dark mode enabled/disabled
 };
 
 export type BackupMetadata = Record<string, { last_backup: string } | undefined>;
@@ -45,6 +52,28 @@ export type RestoreRequest = {
     versions?: Record<string, string | undefined>; // optional versions keyed by identifier
     mode: RestoreMode;
     scriptPath?: string; // when mode === 'script', optional path to write script to
+};
+
+export type VSCodeRestoreRequest = {
+    vscodeId: VSCodeId;
+    identifiers: string[]; // list of extension IDs
+    mode: RestoreMode;
+    scriptPath?: string;
+};
+
+export type ConfigRestoreRequest = {
+    configAppId: string;
+};
+
+export type ConfigAppDef = {
+    id: string;
+    label: string; // UI表示用ラベル
+    os: ('win32' | 'darwin' | 'linux')[];
+    files: {
+        win32?: string[];
+        darwin?: string[];
+        linux?: string[];
+    };
 };
 
 export type AppTheme = 'light' | 'dark' | 'system';

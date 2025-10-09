@@ -1,10 +1,9 @@
 import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from '../../shared/constants';
 import { chooseBackupDirectory, loadConfig, saveConfig, validateBackupDirectory } from '../services/config';
-import { detectManagers, listChocolatey, listMsStore, listScoop, listWinget } from '../services/managers';
-import { runBackup, getBackupMetadata, runBackupSelected, readBackupList } from '../services/backup';
-import { runSequentialInstall, writeInstallScript } from '../services/restore';
-import type { ManagerId, RestoreRequest } from '../../shared/types';
+import { backupManager } from '../services/backup-manager';
+import { restoreManager } from '../services/restore-manager';
+import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest } from '../../shared/types';
 
 export function registerIpcHandlers() {
     ipcMain.handle(IPC_CHANNELS.CONFIG_GET, async () => {
@@ -27,51 +26,70 @@ export function registerIpcHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.CONFIG_VALIDATE_BACKUP_DIR, async () => validateBackupDirectory());
 
-    ipcMain.handle(IPC_CHANNELS.DETECT_MANAGERS, async () => detectManagers());
+    ipcMain.handle(IPC_CHANNELS.DETECT_MANAGERS, async () => backupManager.detectManagers());
+
+    ipcMain.handle(IPC_CHANNELS.CHECK_CONFIG_AVAILABILITY, async () => backupManager.checkConfigAvailability());
 
     ipcMain.handle(IPC_CHANNELS.LIST_PACKAGES, async (_e, managerId: ManagerId) => {
-        switch (managerId) {
-            case 'winget':
-                return listWinget();
-            case 'msstore':
-                return listMsStore();
-            case 'scoop':
-                return listScoop();
-            case 'chocolatey':
-                return listChocolatey();
-        }
+        return backupManager.listPackages(managerId);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.LIST_VSCODE_EXTENSIONS, async (_e, vscodeId: VSCodeId) => {
+        return backupManager.listVSCodeExtensions(vscodeId);
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_RUN, async (_e, managers?: ManagerId[]) => {
-        const cfg = loadConfig();
-        if (!cfg.backupDirectory) throw new Error('Backup directory is not set');
-        return runBackup(cfg.backupDirectory, managers);
+        return backupManager.runBackup(managers);
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_GET_METADATA, async () => {
-        const cfg = loadConfig();
-        if (!cfg.backupDirectory) return {};
-        return getBackupMetadata(cfg.backupDirectory);
+        return backupManager.getBackupMetadata();
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_READ_LIST, async (_e, manager: ManagerId) => {
-        const cfg = loadConfig();
-        if (!cfg.backupDirectory) return [];
-        return readBackupList(cfg.backupDirectory, manager);
+        return backupManager.readBackupList(manager);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.BACKUP_READ_VSCODE_LIST, async (_e, vscodeId: VSCodeId) => {
+        return backupManager.readVSCodeBackupList(vscodeId);
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_RUN_SELECTED, async (_e, manager: ManagerId, identifiers: string[]) => {
-        const cfg = loadConfig();
-        if (!cfg.backupDirectory) throw new Error('Backup directory is not set');
-        return runBackupSelected(cfg.backupDirectory, manager, identifiers);
+        return backupManager.runBackupSelected(manager, identifiers);
     });
 
     ipcMain.handle(IPC_CHANNELS.RESTORE_RUN, async (_e, req: RestoreRequest) => {
-        if (req.mode === 'execute') {
-            await runSequentialInstall(req);
-            return { mode: 'execute' as const };
+        return restoreManager.runRestore(req);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.BACKUP_RUN_VSCODE, async (_e, vscodeId: VSCodeId, identifiers?: string[]) => {
+        return backupManager.runBackupVSCode(vscodeId, identifiers);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.BACKUP_RUN_CONFIG, async (_e, configAppId: string) => {
+        return backupManager.runBackupConfig(configAppId);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_VSCODE, async (_e, req: VSCodeRestoreRequest) => {
+        return restoreManager.runRestoreVSCode(req);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_CONFIG, async (_e, configAppId: string) => {
+        return restoreManager.runRestoreConfig(configAppId);
+    });
+
+    ipcMain.handle(
+        IPC_CHANNELS.RESTORE_GENERATE_SCRIPT,
+        async (_e, req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string) => {
+            return restoreManager.generateScript(req, outputPath);
         }
-        const scriptPath = await writeInstallScript(req, req.scriptPath);
-        return { mode: 'script' as const, scriptPath };
+    );
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_GET_SCRIPT_CONTENT, async (_e, req: RestoreRequest | VSCodeRestoreRequest) => {
+        return restoreManager.getScriptContent(req);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_VSCODE_SETTINGS, async (_e, vscodeId: VSCodeId) => {
+        return restoreManager.restoreVSCodeSettings(vscodeId);
     });
 }

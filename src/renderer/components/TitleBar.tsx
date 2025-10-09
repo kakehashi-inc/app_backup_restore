@@ -1,9 +1,6 @@
 import React from 'react';
 import { Box, Typography, IconButton, Menu, MenuItem, Divider } from '@mui/material';
-import type { AppInfo, AppLanguage } from '@shared/types';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import LanguageIcon from '@mui/icons-material/Language';
+import type { AppInfo } from '@shared/types';
 import MenuIcon from '@mui/icons-material/Menu';
 import MinimizeIcon from '@mui/icons-material/Minimize';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
@@ -13,19 +10,11 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 
 type Props = {
     info: AppInfo | undefined;
-    onToggleTheme: () => void;
-    onChangeLanguage: (lang: AppLanguage) => void;
     onOpenSettings?: () => void;
 };
 
-export default function TitleBar({ info, onToggleTheme, onChangeLanguage, onOpenSettings }: Props) {
+export default function TitleBar({ info, onOpenSettings }: Props) {
     const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
-    const [langAnchor, setLangAnchor] = React.useState<HTMLElement | null>(null);
-    const [isMax, setIsMax] = React.useState(false);
-
-    React.useEffect(() => {
-        window.abr.isMaximized().then(setIsMax);
-    }, []);
 
     return (
         <Box
@@ -53,40 +42,6 @@ export default function TitleBar({ info, onToggleTheme, onChangeLanguage, onOpen
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', WebkitAppRegion: 'no-drag' }}>
-                {/* Theme toggle */}
-                <IconButton size='medium' onClick={onToggleTheme} sx={{ color: 'text.primary' }}>
-                    {info?.theme === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
-                </IconButton>
-
-                {/* Language dropdown */}
-                <IconButton size='medium' onClick={e => setLangAnchor(e.currentTarget)} sx={{ color: 'text.primary' }}>
-                    <LanguageIcon />
-                </IconButton>
-                <Menu
-                    anchorEl={langAnchor}
-                    open={Boolean(langAnchor)}
-                    onClose={() => setLangAnchor(null)}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                    <MenuItem
-                        onClick={() => {
-                            onChangeLanguage('ja');
-                            setLangAnchor(null);
-                        }}
-                    >
-                        日本語
-                    </MenuItem>
-                    <MenuItem
-                        onClick={() => {
-                            onChangeLanguage('en');
-                            setLangAnchor(null);
-                        }}
-                    >
-                        English
-                    </MenuItem>
-                </Menu>
-
                 {/* Burger menu */}
                 <IconButton size='medium' onClick={e => setMenuAnchor(e.currentTarget)} sx={{ color: 'text.primary' }}>
                     <MenuIcon />
@@ -135,8 +90,7 @@ export default function TitleBar({ info, onToggleTheme, onChangeLanguage, onOpen
                 <IconButton
                     size='medium'
                     onClick={async () => {
-                        const m = await window.abr.maximizeOrRestore();
-                        setIsMax(m);
+                        await window.abr.maximizeOrRestore();
                     }}
                     sx={{
                         borderRadius: 0,

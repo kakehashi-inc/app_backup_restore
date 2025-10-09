@@ -1,20 +1,18 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from './locales/en';
-import ja from './locales/ja';
-
-const resources = {
-    en: { translation: en },
-    ja: { translation: ja },
-};
-
-const initialLng = typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+import jaTranslations from './locales/ja';
+import enTranslations from './locales/en';
 
 i18n.use(initReactI18next).init({
-    resources,
-    lng: initialLng,
+    resources: {
+        ja: { translation: jaTranslations },
+        en: { translation: enTranslations },
+    },
+    lng: 'en',
     fallbackLng: 'en',
-    interpolation: { escapeValue: false },
+    interpolation: {
+        escapeValue: false,
+    },
 });
 
 export default i18n;

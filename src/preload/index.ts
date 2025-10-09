@@ -8,12 +8,22 @@ const IPC_CHANNELS = {
     CONFIG_CHOOSE_BACKUP_DIR: 'config:chooseBackupDir',
     CONFIG_VALIDATE_BACKUP_DIR: 'config:validateBackupDir',
     DETECT_MANAGERS: 'detect:managers',
+    CHECK_CONFIG_AVAILABILITY: 'check:configAvailability',
     LIST_PACKAGES: 'list:packages',
+    LIST_VSCODE_EXTENSIONS: 'list:vscodeExtensions',
     BACKUP_RUN: 'backup:run',
     BACKUP_RUN_SELECTED: 'backup:runSelected',
+    BACKUP_RUN_VSCODE: 'backup:runVSCode',
+    BACKUP_RUN_CONFIG: 'backup:runConfig',
     BACKUP_GET_METADATA: 'backup:getMetadata',
     BACKUP_READ_LIST: 'backup:readList',
+    BACKUP_READ_VSCODE_LIST: 'backup:readVSCodeList',
     RESTORE_RUN: 'restore:run',
+    RESTORE_RUN_VSCODE: 'restore:runVSCode',
+    RESTORE_RUN_CONFIG: 'restore:runConfig',
+    RESTORE_GENERATE_SCRIPT: 'restore:generateScript',
+    RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
+    RESTORE_VSCODE_SETTINGS: 'restore:vscodeSettings',
     TASK_PROGRESS: 'task:progress',
     APP_GET_INFO: 'app:getInfo',
     APP_SET_THEME: 'app:setTheme',
@@ -22,6 +32,7 @@ const IPC_CHANNELS = {
     WINDOW_MAXIMIZE_OR_RESTORE: 'window:maximizeOrRestore',
     WINDOW_CLOSE: 'window:close',
     WINDOW_IS_MAXIMIZED: 'window:isMaximized',
+    DIALOG_CONFIRM: 'dialog:confirm',
 } as const;
 
 const api: IpcApi = {
@@ -41,12 +52,24 @@ const api: IpcApi = {
     async detectManagers() {
         return ipcRenderer.invoke(IPC_CHANNELS.DETECT_MANAGERS);
     },
+    async checkConfigAvailability() {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.CHECK_CONFIG_AVAILABILITY);
+    },
     async listPackages(managerId) {
         return ipcRenderer.invoke(IPC_CHANNELS.LIST_PACKAGES, managerId);
+    },
+    async listVSCodeExtensions(vscodeId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.LIST_VSCODE_EXTENSIONS, vscodeId);
     },
     async readBackupList(managerId) {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_READ_LIST, managerId);
+    },
+    async readVSCodeBackupList(vscodeId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_READ_VSCODE_LIST, vscodeId);
     },
     async runBackup(managers) {
         return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RUN, managers);
@@ -59,6 +82,34 @@ const api: IpcApi = {
     },
     async runRestore(req) {
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN, req);
+    },
+    async runBackupVSCode(vscodeId, identifiers) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RUN_VSCODE, vscodeId, identifiers);
+    },
+    async runBackupConfig(configAppId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RUN_CONFIG, configAppId);
+    },
+    async runRestoreVSCode(req) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_VSCODE, req);
+    },
+    async runRestoreConfig(configAppId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_CONFIG, configAppId);
+    },
+    async generateScript(req, outputPath) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_GENERATE_SCRIPT, req, outputPath);
+    },
+    async getScriptContent(req) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_GET_SCRIPT_CONTENT, req);
+    },
+    async restoreVSCodeSettings(vscodeId) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_VSCODE_SETTINGS, vscodeId);
     },
     onTaskProgress(handler) {
         const listener = (_e: unknown, message: string) => handler(message);
