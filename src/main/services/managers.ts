@@ -297,7 +297,6 @@ export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeEx
 }
 
 export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
-    console.log('listVSCodeExtensionsWSL called with vscodeId:', vscodeId);
     const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
     if (!vscodeDef) {
         console.log('No vscodeDef found for vscodeId:', vscodeId);
