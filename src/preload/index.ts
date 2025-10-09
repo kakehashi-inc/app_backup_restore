@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcApi } from '../shared/ipc';
+import type { VSCodeId } from '../shared/types';
 
 // Local copy to avoid runtime import from ../shared in preload
 const IPC_CHANNELS = {
@@ -11,6 +12,7 @@ const IPC_CHANNELS = {
     CHECK_CONFIG_AVAILABILITY: 'check:configAvailability',
     LIST_PACKAGES: 'list:packages',
     LIST_VSCODE_EXTENSIONS: 'list:vscodeExtensions',
+    LIST_VSCODE_EXTENSIONS_WSL: 'list:vscodeExtensionsWSL',
     BACKUP_RUN: 'backup:run',
     BACKUP_RUN_SELECTED: 'backup:runSelected',
     BACKUP_RUN_VSCODE: 'backup:runVSCode',
@@ -20,6 +22,7 @@ const IPC_CHANNELS = {
     BACKUP_READ_VSCODE_LIST: 'backup:readVSCodeList',
     RESTORE_RUN: 'restore:run',
     RESTORE_RUN_VSCODE: 'restore:runVSCode',
+    RESTORE_RUN_VSCODE_WSL: 'restore:runVSCodeWSL',
     RESTORE_RUN_CONFIG: 'restore:runConfig',
     RESTORE_GENERATE_SCRIPT: 'restore:generateScript',
     RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
@@ -63,6 +66,9 @@ const api: IpcApi = {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.LIST_VSCODE_EXTENSIONS, vscodeId);
     },
+    async listVSCodeExtensionsWSL(vscodeId: VSCodeId) {
+        return ipcRenderer.invoke(IPC_CHANNELS.LIST_VSCODE_EXTENSIONS_WSL, vscodeId);
+    },
     async readBackupList(managerId) {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_READ_LIST, managerId);
@@ -94,6 +100,10 @@ const api: IpcApi = {
     async runRestoreVSCode(req) {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_VSCODE, req);
+    },
+    async runRestoreVSCodeWSL(req) {
+        // @ts-ignore widen api
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_VSCODE_WSL, req);
     },
     async runRestoreConfig(configAppId) {
         // @ts-ignore widen api

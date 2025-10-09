@@ -38,6 +38,10 @@ export function registerIpcHandlers() {
         return backupManager.listVSCodeExtensions(vscodeId);
     });
 
+    ipcMain.handle(IPC_CHANNELS.LIST_VSCODE_EXTENSIONS_WSL, async (_e, vscodeId: VSCodeId) => {
+        return backupManager.listVSCodeExtensionsWSL(vscodeId);
+    });
+
     ipcMain.handle(IPC_CHANNELS.BACKUP_RUN, async (_e, managers?: ManagerId[]) => {
         return backupManager.runBackup(managers);
     });
@@ -72,6 +76,10 @@ export function registerIpcHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_VSCODE, async (_e, req: VSCodeRestoreRequest) => {
         return restoreManager.runRestoreVSCode(req);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_VSCODE_WSL, async (_e, req: VSCodeRestoreRequest) => {
+        return restoreManager.runRestoreVSCodeWSL(req);
     });
 
     ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_CONFIG, async (_e, configAppId: string) => {

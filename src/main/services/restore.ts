@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { runCommand } from '../utils/exec';
+import { runCommand, runCommandInWSL } from '../utils/exec';
 import { copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
@@ -71,6 +71,14 @@ export async function runSequentialVSCodeInstall(req: VSCodeRestoreRequest): Pro
     for (const id of req.identifiers) {
         const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
         await runCommand(cmd, args);
+    }
+}
+
+export async function runSequentialVSCodeInstallWSL(req: VSCodeRestoreRequest): Promise<void> {
+    for (const id of req.identifiers) {
+        const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
+        // Run through WSL
+        await runCommandInWSL(cmd, args);
     }
 }
 

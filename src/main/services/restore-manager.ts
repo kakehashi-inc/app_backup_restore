@@ -2,6 +2,7 @@ import { loadConfig } from './config';
 import {
     runSequentialInstall,
     runSequentialVSCodeInstall,
+    runSequentialVSCodeInstallWSL,
     runRestoreConfig,
     writeInstallScript,
     writeVSCodeInstallScript,
@@ -33,6 +34,15 @@ export class RestoreManager {
     async runRestoreVSCode(req: VSCodeRestoreRequest) {
         if (req.mode === 'execute') {
             await runSequentialVSCodeInstall(req);
+            return { mode: 'execute' as const };
+        }
+        const scriptPath = await writeVSCodeInstallScript(req, req.scriptPath);
+        return { mode: 'script' as const, scriptPath };
+    }
+
+    async runRestoreVSCodeWSL(req: VSCodeRestoreRequest) {
+        if (req.mode === 'execute') {
+            await runSequentialVSCodeInstallWSL(req);
             return { mode: 'execute' as const };
         }
         const scriptPath = await writeVSCodeInstallScript(req, req.scriptPath);

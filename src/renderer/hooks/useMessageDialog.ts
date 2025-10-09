@@ -46,29 +46,30 @@ export const useMessageDialog = () => {
     );
 
     const handleClose = useCallback(() => {
-        if (dialogState.resolve) {
-            dialogState.resolve('cancel');
-        }
-        setDialogState({
-            open: false,
-            options: null,
-            resolve: null,
-        });
-    }, [dialogState.resolve]);
-
-    const handleResult = useCallback(
-        (result: DialogResult) => {
-            if (dialogState.resolve) {
-                dialogState.resolve(result);
+        setDialogState(prevState => {
+            if (prevState.resolve) {
+                prevState.resolve('cancel');
             }
-            setDialogState({
+            return {
                 open: false,
                 options: null,
                 resolve: null,
-            });
-        },
-        [dialogState.resolve]
-    );
+            };
+        });
+    }, []);
+
+    const handleResult = useCallback((result: DialogResult) => {
+        setDialogState(prevState => {
+            if (prevState.resolve) {
+                prevState.resolve(result);
+            }
+            return {
+                open: false,
+                options: null,
+                resolve: null,
+            };
+        });
+    }, []);
 
     // Convenience methods
     const showOk = useCallback(

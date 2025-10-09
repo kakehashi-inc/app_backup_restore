@@ -1,0 +1,350 @@
+import React from 'react';
+import {
+    Container,
+    Paper,
+    Typography,
+    Button,
+    Stack,
+    Divider,
+    List,
+    ListItem,
+    ListItemText,
+    Checkbox,
+    ListItemIcon,
+    CircularProgress,
+    Box,
+} from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../store/useAppStore';
+import type { MergedPackageItem } from '@shared/types';
+
+interface VSCodeDetailsPageProps {
+    onRefresh: () => void;
+    onBackupSelected: () => void;
+    onRestoreExecute: () => void;
+    onGenerateScript: () => void;
+    onBackupSettings: () => void;
+    onRestoreSettings: () => void;
+    onRestoreExecuteExtensionsInWSL: () => void;
+    onBack: () => void;
+}
+
+export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
+    onRefresh,
+    onBackupSelected,
+    onRestoreExecute,
+    onGenerateScript,
+    onBackupSettings,
+    onRestoreSettings,
+    onRestoreExecuteExtensionsInWSL,
+    onBack,
+}) => {
+    const { t } = useTranslation();
+    const {
+        extensionItems,
+        extensionItemsInWSL,
+        selectedIds,
+        selectedIdsInWSL,
+        loadingItems,
+        progressMessage,
+        showWSLView,
+        detectedApps,
+        setSelectedIds,
+        setSelectedIdsInWSL,
+        setShowWSLView,
+    } = useAppStore();
+
+    const selectedInstalledCount = extensionItems.filter(
+        (it: MergedPackageItem) => selectedIds.includes(it.id) && it.isInstalled
+    ).length;
+    const selectedNotInstalledCount = extensionItems.filter(
+        (it: MergedPackageItem) => selectedIds.includes(it.id) && !it.isInstalled
+    ).length;
+    const selectedIdsInWSLNotInstalledCount = extensionItemsInWSL.filter(
+        (it: MergedPackageItem) => selectedIdsInWSL.includes(it.id) && !it.isInstalled
+    ).length;
+
+    return (
+        <Container maxWidth={false} sx={{ py: 2 }}>
+            <Paper sx={{ p: 2, mb: 4 }}>
+                {/* Settings section */}
+                <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
+                    <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
+                        {t('vscodeSettings')}
+                    </Typography>
+                    <Button variant='contained' color='primary' onClick={onBackupSettings} disabled={loadingItems}>
+                        {t('backupSettings')}
+                    </Button>
+                    <Button variant='outlined' color='primary' onClick={onRestoreSettings} disabled={loadingItems}>
+                        {t('restoreSettings')}
+                    </Button>
+                    <Box sx={{ flex: 1 }} />
+                    <Button variant='text' onClick={onBack}>
+                        {t('back')}
+                    </Button>
+                </Stack>
+                <Divider sx={{ my: 2 }} />
+
+                {/* Extension List Tabs */}
+                {detectedApps.wsl && extensionItemsInWSL.length > 0 && (
+                    <Stack direction='row' spacing={1} sx={{ mb: 2 }}>
+                        <Button
+                            variant={!showWSLView ? 'contained' : 'outlined'}
+                            onClick={() => setShowWSLView(false)}
+                            size='small'
+                        >
+                            Extensions ({extensionItems.length})
+                        </Button>
+                        <Button
+                            variant={showWSLView ? 'contained' : 'outlined'}
+                            onClick={() => setShowWSLView(true)}
+                            size='small'
+                        >
+                            Extensions in WSL ({extensionItemsInWSL.length})
+                        </Button>
+                    </Stack>
+                )}
+
+                {/* Action buttons */}
+                <Stack direction='row' spacing={2} alignItems='center'>
+                    <Button variant='outlined' onClick={onRefresh} disabled={loadingItems}>
+                        {loadingItems ? (
+                            <>
+                                <CircularProgress size={16} sx={{ mr: 1 }} />
+                                {t('refresh')}
+                            </>
+                        ) : (
+                            t('refresh')
+                        )}
+                    </Button>
+                    <Button
+                        variant='contained'
+                        disabled={selectedInstalledCount === 0 || loadingItems}
+                        onClick={onBackupSelected}
+                    >
+                        {t('backup')}
+                        {selectedInstalledCount > 0 && ` (${selectedInstalledCount})`}
+                    </Button>
+                    <Button
+                        variant='outlined'
+                        disabled={selectedNotInstalledCount === 0 || loadingItems}
+                        onClick={onRestoreExecute}
+                    >
+                        {t('restore')}
+                        {selectedNotInstalledCount > 0 && ` (${selectedNotInstalledCount})`}
+                    </Button>
+                    <Button
+                        variant='outlined'
+                        disabled={selectedIds.length === 0 || loadingItems}
+                        onClick={onGenerateScript}
+                    >
+                        {t('generateScript')}
+                        {selectedIds.length > 0 && ` (${selectedIds.length})`}
+                    </Button>
+                </Stack>
+                <Divider sx={{ my: 2 }} />
+
+                {/* Selection buttons */}
+                <Stack direction='row' spacing={1} sx={{ mb: 1 }}>
+                    {!showWSLView ? (
+                        <>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() => setSelectedIds(extensionItems.map((it: MergedPackageItem) => it.id))}
+                                disabled={loadingItems || extensionItems.length === 0}
+                            >
+                                {t('selectAll')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() => setSelectedIds([])}
+                                disabled={loadingItems}
+                            >
+                                {t('clearAll')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() =>
+                                    setSelectedIds(extensionItems.filter(it => it.isInstalled).map(it => it.id))
+                                }
+                                disabled={loadingItems || extensionItems.length === 0}
+                            >
+                                {t('selectInstalled')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() =>
+                                    setSelectedIds(extensionItems.filter(it => !it.isInstalled).map(it => it.id))
+                                }
+                                disabled={loadingItems || extensionItems.length === 0}
+                            >
+                                {t('selectNotInstalled')}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() =>
+                                    setSelectedIdsInWSL(extensionItemsInWSL.map((it: MergedPackageItem) => it.id))
+                                }
+                                disabled={loadingItems || extensionItemsInWSL.length === 0}
+                            >
+                                {t('selectAll')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() => setSelectedIdsInWSL([])}
+                                disabled={loadingItems}
+                            >
+                                {t('clearAll')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() =>
+                                    setSelectedIdsInWSL(
+                                        extensionItemsInWSL.filter(it => it.isInstalled).map(it => it.id)
+                                    )
+                                }
+                                disabled={loadingItems || extensionItemsInWSL.length === 0}
+                            >
+                                {t('selectInstalled')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                onClick={() =>
+                                    setSelectedIdsInWSL(
+                                        extensionItemsInWSL.filter(it => !it.isInstalled).map(it => it.id)
+                                    )
+                                }
+                                disabled={loadingItems || extensionItemsInWSL.length === 0}
+                            >
+                                {t('selectNotInstalled')}
+                            </Button>
+                            <Button
+                                size='small'
+                                variant='contained'
+                                disabled={selectedIdsInWSLNotInstalledCount === 0 || loadingItems}
+                                onClick={onRestoreExecuteExtensionsInWSL}
+                            >
+                                {t('restore')} ({selectedIdsInWSLNotInstalledCount})
+                            </Button>
+                        </>
+                    )}
+                </Stack>
+
+                {/* Extension list */}
+                {loadingItems ? (
+                    <Stack direction='row' alignItems='center' spacing={1} sx={{ py: 4 }}>
+                        <CircularProgress size={20} />
+                        <Typography variant='body2'>{progressMessage || t('loading')}</Typography>
+                    </Stack>
+                ) : (
+                    <List dense>
+                        {!showWSLView
+                            ? extensionItems.map((it: MergedPackageItem) => {
+                                  const checked = selectedIds.includes(it.id);
+                                  const statusText = it.isInstalled ? t('statusInstalled') : t('statusNotInstalled');
+                                  const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
+
+                                  return (
+                                      <ListItem key={it.id} disableGutters>
+                                          <ListItemIcon>
+                                              <Checkbox
+                                                  edge='start'
+                                                  onChange={() =>
+                                                      setSelectedIds(
+                                                          selectedIds.includes(it.id)
+                                                              ? selectedIds.filter(x => x !== it.id)
+                                                              : [...selectedIds, it.id]
+                                                      )
+                                                  }
+                                                  checked={checked}
+                                              />
+                                          </ListItemIcon>
+                                          <ListItemText
+                                              primary={
+                                                  <Stack direction='row' spacing={1} alignItems='center'>
+                                                      <Typography>{it.name}</Typography>
+                                                      <Typography
+                                                          variant='caption'
+                                                          sx={{
+                                                              px: 1,
+                                                              py: 0.25,
+                                                              borderRadius: 1,
+                                                              bgcolor: statusColor,
+                                                              color: 'white',
+                                                              fontWeight: 'bold',
+                                                          }}
+                                                      >
+                                                          {statusText}
+                                                      </Typography>
+                                                  </Stack>
+                                              }
+                                              secondary={[it.id, it.version ? `v${it.version}` : '']
+                                                  .filter(Boolean)
+                                                  .join(' / ')}
+                                          />
+                                      </ListItem>
+                                  );
+                              })
+                            : extensionItemsInWSL.map((it: MergedPackageItem) => {
+                                  const checked = selectedIdsInWSL.includes(it.id);
+                                  const statusText = it.isInstalled ? t('statusInstalled') : t('statusNotInstalled');
+                                  const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
+
+                                  return (
+                                      <ListItem key={`wsl-${it.id}`} disableGutters>
+                                          <ListItemIcon>
+                                              <Checkbox
+                                                  edge='start'
+                                                  onChange={() =>
+                                                      setSelectedIdsInWSL(
+                                                          selectedIdsInWSL.includes(it.id)
+                                                              ? selectedIdsInWSL.filter(x => x !== it.id)
+                                                              : [...selectedIdsInWSL, it.id]
+                                                      )
+                                                  }
+                                                  checked={checked}
+                                              />
+                                          </ListItemIcon>
+                                          <ListItemText
+                                              primary={
+                                                  <Stack direction='row' spacing={1} alignItems='center'>
+                                                      <Typography>{it.name}</Typography>
+                                                      <Typography
+                                                          variant='caption'
+                                                          sx={{
+                                                              px: 1,
+                                                              py: 0.25,
+                                                              borderRadius: 1,
+                                                              bgcolor: statusColor,
+                                                              color: 'white',
+                                                              fontWeight: 'bold',
+                                                          }}
+                                                      >
+                                                          {statusText}
+                                                      </Typography>
+                                                  </Stack>
+                                              }
+                                              secondary={[it.id, it.version ? `v${it.version}` : '']
+                                                  .filter(Boolean)
+                                                  .join(' / ')}
+                                          />
+                                      </ListItem>
+                                  );
+                              })}
+                    </List>
+                )}
+            </Paper>
+        </Container>
+    );
+};

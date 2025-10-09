@@ -30,6 +30,18 @@ export function runCommand(
     });
 }
 
+export async function runCommandInWSL(
+    cmd: string,
+    args: string[],
+    opts: { cwd?: string; env?: NodeJS.ProcessEnv } = {}
+): Promise<ExecResult> {
+    if (platform() !== 'win32') {
+        throw new Error('WSL commands can only be run on Windows');
+    }
+
+    return runCommand('wsl', ['-e', cmd, ...args], opts);
+}
+
 export async function findCommand(command: string): Promise<boolean> {
     const isWin = platform() === 'win32';
     const finder = isWin ? 'where' : 'which';

@@ -25,6 +25,7 @@ export type IpcApi = {
     checkConfigAvailability?(): Promise<Record<string, boolean>>;
     listPackages(managerId: ManagerId): Promise<WingetItem[] | MsStoreItem[] | ScoopItem[] | ChocolateyItem[]>;
     listVSCodeExtensions?(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]>;
+    listVSCodeExtensionsWSL?(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]>;
     readBackupList?(managerId: ManagerId): Promise<any[]>;
     readVSCodeBackupList?(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]>;
     runBackup(managers?: ManagerId[]): Promise<{ written: string[]; metadataUpdated: boolean }>;
@@ -40,6 +41,7 @@ export type IpcApi = {
     getBackupMetadata?(): Promise<BackupMetadata>;
     runRestore(req: RestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
     runRestoreVSCode?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
+    runRestoreVSCodeWSL?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
     runRestoreConfig?(configAppId: string): Promise<{ success: boolean }>;
     generateScript?(req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string): Promise<{ scriptPath: string }>;
     getScriptContent?(req: RestoreRequest | VSCodeRestoreRequest): Promise<{ content: string }>;

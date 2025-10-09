@@ -9,7 +9,15 @@ import {
     readVSCodeBackupList,
     checkAllConfigAppsAvailability,
 } from './backup';
-import { listWinget, listMsStore, listScoop, listChocolatey, listVSCodeExtensions, detectManagers } from './managers';
+import {
+    listWinget,
+    listMsStore,
+    listScoop,
+    listChocolatey,
+    listVSCodeExtensions,
+    listVSCodeExtensionsWSL,
+    detectManagers,
+} from './managers';
 import type { ManagerId, VSCodeId } from '../../shared/types';
 
 export class BackupManager {
@@ -37,6 +45,10 @@ export class BackupManager {
 
     async listVSCodeExtensions(vscodeId: VSCodeId) {
         return listVSCodeExtensions(vscodeId);
+    }
+
+    async listVSCodeExtensionsWSL(vscodeId: VSCodeId) {
+        return listVSCodeExtensionsWSL(vscodeId);
     }
 
     // Detection

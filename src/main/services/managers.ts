@@ -12,7 +12,7 @@ import type {
     VSCodeId,
 } from '../../shared/types';
 import { MANAGER_DEFS, VS_CODE_DEFS } from '../../shared/constants';
-import { isPackageManagerAvailable, runCommand } from '../utils/exec';
+import { isPackageManagerAvailable, runCommand, runCommandInWSL } from '../utils/exec';
 import { readJsonFile, writeJsonFile } from '../utils/fsx';
 import { loadConfig } from './config';
 
@@ -297,17 +297,21 @@ export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeEx
 }
 
 export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
-    // Only works on Windows
-    if (os.platform() !== 'win32') return [];
-
+    console.log('listVSCodeExtensionsWSL called with vscodeId:', vscodeId);
     const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
-    if (!vscodeDef) return [];
+    if (!vscodeDef) {
+        console.log('No vscodeDef found for vscodeId:', vscodeId);
+        return [];
+    }
 
     const command = vscodeDef.command;
-    if (!command) return [];
+    if (!command) {
+        console.log('No command found for vscodeId:', vscodeId);
+        return [];
+    }
 
     try {
-        const { stdout, code } = await runCommand('wsl', ['-e', command, '--list-extensions', '--show-versions']);
+        const { stdout, code } = await runCommandInWSL(command, ['--list-extensions', '--show-versions']);
         if (code !== 0) return [];
 
         const lines = stdout
