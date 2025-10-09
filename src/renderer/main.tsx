@@ -136,9 +136,16 @@ function App() {
         })();
 
         // Listen for progress messages
-        const removeProgressListener = window.abr.onTaskProgress?.((message: string) => {
-            setProgressMessage(message);
-        });
+        const removeProgressListener = window.abr.onTaskProgress?.(
+            (message: string | { key: string; params: Record<string, any> }) => {
+                if (typeof message === 'object' && message.key) {
+                    const translatedMessage = t(message.key, message.params) as string;
+                    setProgressMessage(translatedMessage);
+                } else {
+                    setProgressMessage(message as string);
+                }
+            }
+        );
 
         return () => {
             removeProgressListener?.();

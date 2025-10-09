@@ -184,7 +184,14 @@ async function getWingetSourceApps(source: string): Promise<WingetItem[]> {
             if (!pkgId) continue;
 
             // Send progress update
-            const progressMessage = `Getting display names for ${source} packages: ${i + 1}/${total}`;
+            const progressMessage = {
+                key: 'gettingDisplayNames',
+                params: {
+                    source,
+                    current: i + 1,
+                    total,
+                },
+            };
             const mainWindow = BrowserWindow.getFocusedWindow();
             if (mainWindow) {
                 mainWindow.webContents.send('task:progress', progressMessage);

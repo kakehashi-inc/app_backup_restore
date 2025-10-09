@@ -30,6 +30,7 @@ export default {
     statusInstalled: 'Installed',
     statusNotInstalled: 'Not Installed',
     loading: 'Loading…',
+    gettingDisplayNames: 'Getting display names for {{source}} packages: {{current}}/{{total}}',
     generateScript: 'Generate Script',
     scriptGenerated: 'Script generated',
     scriptGenerationFailed: 'Failed to generate script',

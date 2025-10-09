@@ -44,7 +44,7 @@ export type IpcApi = {
     generateScript?(req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string): Promise<{ scriptPath: string }>;
     getScriptContent?(req: RestoreRequest | VSCodeRestoreRequest): Promise<{ content: string }>;
     restoreVSCodeSettings?(vscodeId: VSCodeId): Promise<{ success: boolean }>;
-    onTaskProgress(handler: (message: string) => void): () => void; // returns unsubscribe
+    onTaskProgress(handler: (message: string | { key: string; params: Record<string, any> }) => void): () => void; // returns unsubscribe
     // App info / settings
     getAppInfo(): Promise<AppInfo>;
     setTheme(theme: AppTheme): Promise<{ theme: AppTheme }>;

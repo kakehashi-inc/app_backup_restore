@@ -30,6 +30,7 @@ export default {
     statusInstalled: 'インストール済み',
     statusNotInstalled: '未インストール',
     loading: '取得中…',
+    gettingDisplayNames: '{{source}}パッケージの表示名を取得中: {{current}}/{{total}}',
     generateScript: 'スクリプト生成',
     scriptGenerated: 'スクリプトを生成しました',
     scriptGenerationFailed: 'スクリプトの生成に失敗しました',
