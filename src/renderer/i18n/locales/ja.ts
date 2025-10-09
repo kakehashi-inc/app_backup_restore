@@ -44,7 +44,6 @@ export default {
     close: '閉じる',
     showUnavailableApps: '対象外のアプリを表示',
     notAvailable: '利用不可',
-    vscodeSettings: 'VSCode設定',
     backupSettings: '設定のバックアップ',
     restoreSettings: '設定の復元',
     settingsBackupSuccess: '設定のバックアップが完了しました',

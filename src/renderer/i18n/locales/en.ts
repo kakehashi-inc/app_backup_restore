@@ -44,7 +44,6 @@ export default {
     close: 'Close',
     showUnavailableApps: 'Show Unavailable Apps',
     notAvailable: 'Not Available',
-    vscodeSettings: 'VSCode Settings',
     backupSettings: 'Backup Settings',
     restoreSettings: 'Restore Settings',
     settingsBackupSuccess: 'Settings backed up successfully',

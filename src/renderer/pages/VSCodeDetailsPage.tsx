@@ -16,6 +16,7 @@ import {
     Backdrop,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { VS_CODE_DEFS } from '@shared/constants';
 import useAppStore from '../store/useAppStore';
 import type { MergedPackageItem } from '@shared/types';
 
@@ -42,6 +43,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
 }) => {
     const { t } = useTranslation();
     const {
+        selectedManager,
         extensionItems,
         extensionItemsInWSL,
         selectedIds,
@@ -67,13 +69,16 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
         (it: MergedPackageItem) => selectedIdsInWSL.includes(it.id) && !it.isInstalled
     ).length;
 
+    const vscodeDef = VS_CODE_DEFS.find(e => e.id === selectedManager);
+    const appLabel = vscodeDef?.label || selectedManager;
+
     return (
         <Container maxWidth={false} sx={{ py: 2 }}>
             <Paper sx={{ p: 2, mb: 4 }}>
-                {/* Settings section */}
+                {/* Header with app name and Back button */}
                 <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
-                    <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-                        {t('vscodeSettings')}
+                    <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
+                        {appLabel}
                     </Typography>
                     <Button
                         variant='contained'
