@@ -41,6 +41,7 @@ app.whenReady().then(async () => {
             version: pkg.version || app.getVersion(),
             language: (app.getLocale().startsWith('ja') ? 'ja' : 'en') as 'ja' | 'en',
             theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light',
+            os: process.platform as 'win32' | 'darwin' | 'linux',
         };
     });
 

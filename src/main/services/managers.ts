@@ -6,12 +6,21 @@ import { getCacheDir } from '../../shared/constants';
 import type { ChocolateyItem, MsStoreItem, ScoopItem, WingetItem } from '../../shared/types';
 import { isCommandAvailable, runCommand } from '../utils/exec';
 import { readJsonFile, writeJsonFile } from '../utils/fsx';
+import { loadConfig } from './config';
 
 // Cache for winget display names (PackageId -> display name)
 type WingetCache = Record<string, { package_id: string; cached_at: string; display_name: string } | undefined>;
 
+function resolveCacheDir(): string {
+    const cfg = loadConfig();
+    const base = cfg.backupDirectory && fs.existsSync(cfg.backupDirectory) ? cfg.backupDirectory : getCacheDir();
+    const dir = path.join(base, 'cache');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    return dir;
+}
+
 function getWingetCachePath(): string {
-    return path.join(getCacheDir(), 'winget_cache.json');
+    return path.join(resolveCacheDir(), 'winget_cache.json');
 }
 
 function loadWingetCache(): WingetCache {
@@ -94,14 +103,7 @@ async function getWingetSourceApps(source: string): Promise<WingetItem[]> {
         }
 
         const items: WingetItem[] = [];
-        // Determine which need fetching for cache progress (not shown in UI yet)
         const cache = loadWingetCache();
-        const missing = new Set<string>();
-        for (const p of packages) {
-            const pkgId = p?.PackageIdentifier as string | undefined;
-            if (pkgId && !cache[pkgId]) missing.add(pkgId);
-        }
-
         for (const p of packages) {
             const pkgId = p?.PackageIdentifier as string | undefined;
             const version = (p?.Version as string | undefined) || 'latest';

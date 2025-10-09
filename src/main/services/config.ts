@@ -33,3 +33,14 @@ export async function chooseBackupDirectory(current?: string): Promise<string | 
     if (res.canceled || res.filePaths.length === 0) return undefined;
     return res.filePaths[0];
 }
+
+export function validateBackupDirectory(): boolean {
+    const cfg = loadConfig();
+    if (!cfg.backupDirectory) return false;
+    try {
+        const stat = fs.statSync(cfg.backupDirectory);
+        return stat.isDirectory();
+    } catch {
+        return false;
+    }
+}

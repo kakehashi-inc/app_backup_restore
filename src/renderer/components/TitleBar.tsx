@@ -15,9 +15,10 @@ type Props = {
     info: AppInfo | undefined;
     onToggleTheme: () => void;
     onChangeLanguage: (lang: AppLanguage) => void;
+    onOpenSettings?: () => void;
 };
 
-export default function TitleBar({ info, onToggleTheme, onChangeLanguage }: Props) {
+export default function TitleBar({ info, onToggleTheme, onChangeLanguage, onOpenSettings }: Props) {
     const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
     const [langAnchor, setLangAnchor] = React.useState<HTMLElement | null>(null);
     const [isMax, setIsMax] = React.useState(false);
@@ -99,7 +100,8 @@ export default function TitleBar({ info, onToggleTheme, onChangeLanguage }: Prop
                 >
                     <MenuItem
                         onClick={() => {
-                            /* settings placeholder */ setMenuAnchor(null);
+                            setMenuAnchor(null);
+                            onOpenSettings?.();
                         }}
                     >
                         <SettingsIcon fontSize='small' style={{ marginRight: 8 }} />

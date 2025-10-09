@@ -10,15 +10,22 @@ import type {
     AppInfo,
     AppLanguage,
     AppTheme,
+    BackupMetadata,
 } from './types';
 
 export type IpcApi = {
     getConfig(): Promise<AppConfig>;
     setBackupDirectory(absPath: string): Promise<AppConfig>;
     chooseBackupDirectory(): Promise<AppConfig>;
+    validateBackupDirectory?(): Promise<boolean>;
     detectManagers(): Promise<DetectResult>;
     listPackages(managerId: ManagerId): Promise<WingetItem[] | MsStoreItem[] | ScoopItem[] | ChocolateyItem[]>;
     runBackup(managers?: ManagerId[]): Promise<{ written: string[]; metadataUpdated: boolean }>;
+    runBackupSelected?(
+        managerId: ManagerId,
+        identifiers: string[]
+    ): Promise<{ written: string[]; metadataUpdated: boolean }>;
+    getBackupMetadata?(): Promise<BackupMetadata>;
     runRestore(req: RestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
     onTaskProgress(handler: (message: string) => void): () => void; // returns unsubscribe
     // App info / settings

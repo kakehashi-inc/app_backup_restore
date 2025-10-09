@@ -31,7 +31,7 @@ export type AppConfig = {
     backupDirectory: string; // absolute path to backup root selected by user
 };
 
-export type BackupMetadata = Record<ManagerId, { last_backup: string } | undefined>;
+export type BackupMetadata = Record<string, { last_backup: string } | undefined>;
 
 export type DetectResult = Record<ManagerId, boolean> & { wslDetected?: boolean };
 
@@ -53,4 +53,12 @@ export type AppInfo = {
     version: string;
     language: AppLanguage;
     theme: AppTheme;
+    os: 'win32' | 'darwin' | 'linux';
+};
+
+export type ManagerRow = {
+    id: ManagerId;
+    name: string;
+    detected: boolean;
+    lastBackup?: string;
 };
