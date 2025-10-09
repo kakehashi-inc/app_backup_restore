@@ -11,6 +11,8 @@ import {
     TableRow,
     TableCell,
     Collapse,
+    Backdrop,
+    CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -35,6 +37,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
         configAvailability,
         showUnavailablePackages,
         showUnavailableConfigs,
+        isProcessing,
+        processingMessage,
         setShowUnavailablePackages,
         setShowUnavailableConfigs,
     } = useAppStore();
@@ -271,6 +275,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                     </>
                 )}
             </Paper>
+
+            {/* Processing overlay */}
+            <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={isProcessing}>
+                <Stack direction='column' alignItems='center' spacing={2}>
+                    <CircularProgress color='inherit' />
+                    <Typography variant='h6'>{processingMessage || t('processing')}</Typography>
+                </Stack>
+            </Backdrop>
         </Container>
     );
 };

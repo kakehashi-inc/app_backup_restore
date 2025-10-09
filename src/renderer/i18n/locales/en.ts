@@ -23,6 +23,18 @@ export default {
     statusInstalled: 'Installed',
     statusNotInstalled: 'Not Installed',
     loading: 'Loading…',
+
+    // Processing messages
+    processing: 'Processing...',
+    backingUpSelected: 'Backing up selected items...',
+    restoringSelected: 'Restoring selected items...',
+    generatingScript: 'Generating script...',
+    backingUpSettings: 'Backing up settings...',
+    restoringSettings: 'Restoring settings...',
+    restoringExtensionsInWSL: 'Restoring extensions in WSL...',
+    backingUpAll: 'Backing up... ({{current}} / {{total}})',
+    backingUpSingle: 'Backing up {{name}}...',
+    restoringSingle: 'Restoring {{name}}...',
     generateScript: 'Generate Script',
     scriptGenerationFailed: 'Failed to generate script',
     scriptTitle: 'Installation Script',

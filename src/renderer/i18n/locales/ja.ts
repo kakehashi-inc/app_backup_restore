@@ -23,6 +23,18 @@ export default {
     statusInstalled: 'インストール済み',
     statusNotInstalled: '未インストール',
     loading: '取得中…',
+
+    // Processing messages
+    processing: '処理中...',
+    backingUpSelected: '選択した項目をバックアップ中...',
+    restoringSelected: '選択した項目を復元中...',
+    generatingScript: 'スクリプトを生成中...',
+    backingUpSettings: '設定をバックアップ中...',
+    restoringSettings: '設定を復元中...',
+    restoringExtensionsInWSL: 'WSL内の拡張機能を復元中...',
+    backingUpAll: 'バックアップ中... ({{current}} / {{total}})',
+    backingUpSingle: '{{name}}をバックアップ中...',
+    restoringSingle: '{{name}}を復元中...',
     generateScript: 'スクリプト生成',
     scriptGenerationFailed: 'スクリプトの生成に失敗しました',
     scriptTitle: 'インストールスクリプト',

@@ -28,6 +28,10 @@ interface AppState {
     showUnavailablePackages: boolean;
     showUnavailableConfigs: boolean;
 
+    // Processing state
+    isProcessing: boolean;
+    processingMessage: string;
+
     // Dialog state
     scriptDialogOpen: boolean;
     scriptContent: string;
@@ -59,6 +63,8 @@ interface AppState {
     setShowWSLView: (show: boolean) => void;
     setShowUnavailablePackages: (show: boolean) => void;
     setShowUnavailableConfigs: (show: boolean) => void;
+    setIsProcessing: (processing: boolean) => void;
+    setProcessingMessage: (message: string) => void;
     setScriptDialogOpen: (open: boolean) => void;
     setScriptContent: (content: string) => void;
     setDetectedApps: (apps: Record<string, boolean>) => void;
@@ -87,6 +93,8 @@ const useAppStore = create<AppState>(set => ({
     showWSLView: false,
     showUnavailablePackages: false,
     showUnavailableConfigs: false,
+    isProcessing: false,
+    processingMessage: '',
     scriptDialogOpen: false,
     scriptContent: '',
     detectedApps: {},
@@ -109,6 +117,8 @@ const useAppStore = create<AppState>(set => ({
     setShowWSLView: showWSLView => set({ showWSLView }),
     setShowUnavailablePackages: showUnavailablePackages => set({ showUnavailablePackages }),
     setShowUnavailableConfigs: showUnavailableConfigs => set({ showUnavailableConfigs }),
+    setIsProcessing: isProcessing => set({ isProcessing }),
+    setProcessingMessage: processingMessage => set({ processingMessage }),
     setScriptDialogOpen: scriptDialogOpen => set({ scriptDialogOpen }),
     setScriptContent: scriptContent => set({ scriptContent }),
     setDetectedApps: detectedApps => set({ detectedApps }),

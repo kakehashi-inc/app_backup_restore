@@ -13,6 +13,7 @@ import {
     ListItemIcon,
     CircularProgress,
     Box,
+    Backdrop,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { MANAGER_DEFS } from '@shared/constants';
@@ -35,7 +36,16 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
     onBack,
 }) => {
     const { t } = useTranslation();
-    const { selectedManager, packageItems, selectedIds, loadingItems, progressMessage, setSelectedIds } = useAppStore();
+    const {
+        selectedManager,
+        packageItems,
+        selectedIds,
+        loadingItems,
+        progressMessage,
+        isProcessing,
+        processingMessage,
+        setSelectedIds,
+    } = useAppStore();
 
     const managerDef = MANAGER_DEFS.find(m => m.id === selectedManager);
     const selectedInstalledCount = packageItems.filter(
@@ -62,7 +72,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
 
                 {/* Action buttons */}
                 <Stack direction='row' spacing={2} alignItems='center'>
-                    <Button variant='outlined' onClick={onRefresh} disabled={loadingItems}>
+                    <Button variant='outlined' onClick={onRefresh} disabled={loadingItems || isProcessing}>
                         {loadingItems ? (
                             <>
                                 <CircularProgress size={16} sx={{ mr: 1 }} />
@@ -74,7 +84,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                     </Button>
                     <Button
                         variant='contained'
-                        disabled={selectedInstalledCount === 0 || loadingItems}
+                        disabled={selectedInstalledCount === 0 || loadingItems || isProcessing}
                         onClick={onBackupSelected}
                     >
                         {t('backup')}
@@ -82,7 +92,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedNotInstalledCount === 0 || loadingItems}
+                        disabled={selectedNotInstalledCount === 0 || loadingItems || isProcessing}
                         onClick={onRestoreExecute}
                     >
                         {t('restore')}
@@ -90,7 +100,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedIds.length === 0 || loadingItems}
+                        disabled={selectedIds.length === 0 || loadingItems || isProcessing}
                         onClick={onGenerateScript}
                     >
                         {t('generateScript')}
@@ -105,18 +115,23 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                         size='small'
                         variant='outlined'
                         onClick={() => setSelectedIds(packageItems.map(it => it.id))}
-                        disabled={loadingItems || packageItems.length === 0}
+                        disabled={loadingItems || packageItems.length === 0 || isProcessing}
                     >
                         {t('selectAll')}
                     </Button>
-                    <Button size='small' variant='outlined' onClick={() => setSelectedIds([])} disabled={loadingItems}>
+                    <Button
+                        size='small'
+                        variant='outlined'
+                        onClick={() => setSelectedIds([])}
+                        disabled={loadingItems || isProcessing}
+                    >
                         {t('clearAll')}
                     </Button>
                     <Button
                         size='small'
                         variant='outlined'
                         onClick={() => setSelectedIds(packageItems.filter(it => it.isInstalled).map(it => it.id))}
-                        disabled={loadingItems || packageItems.length === 0}
+                        disabled={loadingItems || packageItems.length === 0 || isProcessing}
                     >
                         {t('selectInstalled')}
                     </Button>
@@ -124,7 +139,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                         size='small'
                         variant='outlined'
                         onClick={() => setSelectedIds(packageItems.filter(it => !it.isInstalled).map(it => it.id))}
-                        disabled={loadingItems || packageItems.length === 0}
+                        disabled={loadingItems || packageItems.length === 0 || isProcessing}
                     >
                         {t('selectNotInstalled')}
                     </Button>
@@ -156,6 +171,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                                                 )
                                             }
                                             checked={checked}
+                                            disabled={isProcessing}
                                         />
                                     </ListItemIcon>
                                     <ListItemText
@@ -187,6 +203,14 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                     </List>
                 )}
             </Paper>
+
+            {/* Processing overlay */}
+            <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={isProcessing}>
+                <Stack direction='column' alignItems='center' spacing={2}>
+                    <CircularProgress color='inherit' />
+                    <Typography variant='h6'>{processingMessage || t('processing')}</Typography>
+                </Stack>
+            </Backdrop>
         </Container>
     );
 };

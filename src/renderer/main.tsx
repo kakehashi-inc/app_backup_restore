@@ -54,6 +54,8 @@ function App() {
         setSnackbar,
         setScriptContent,
         setScriptDialogOpen,
+        setIsProcessing,
+        setProcessingMessage,
     } = useAppStore();
 
     // Initialize app data
@@ -325,10 +327,17 @@ function App() {
     const runBackupAll = async (ids: string[]) => {
         if (!(await confirm(t('confirmBulkBackup')))) return;
 
+        setIsProcessing(true);
+        setProcessingMessage(t('backingUpAll', { current: 0, total: ids.length }));
+
         const successfulBackups: string[] = [];
+        let currentStep = 0;
 
         const mgrs = ids.filter(x => MANAGER_DEFS.some(m => m.id === x)) as ManagerId[];
         for (const managerId of mgrs) {
+            currentStep++;
+            setProcessingMessage(t('backingUpAll', { current: currentStep, total: ids.length }));
+
             try {
                 await window.abr.runBackup([managerId]);
                 const managerDef = MANAGER_DEFS.find(m => m.id === managerId);
@@ -347,6 +356,9 @@ function App() {
 
         const vscodeApps = ids.filter(x => VS_CODE_DEFS.some(e => e.id === x)) as VSCodeId[];
         for (const vscodeId of vscodeApps) {
+            currentStep++;
+            setProcessingMessage(t('backingUpAll', { current: currentStep, total: ids.length }));
+
             try {
                 await window.abr.runBackupVSCode?.(vscodeId);
                 const vscodeDef = VS_CODE_DEFS.find(e => e.id === vscodeId);
@@ -365,6 +377,9 @@ function App() {
 
         const configAppIds = ids.filter(x => CONFIG_APP_DEFS.some(c => c.id === x));
         for (const configAppId of configAppIds) {
+            currentStep++;
+            setProcessingMessage(t('backingUpAll', { current: currentStep, total: ids.length }));
+
             try {
                 await window.abr.runBackupConfig?.(configAppId as any);
                 const configDef = CONFIG_APP_DEFS.find(c => c.id === configAppId);
@@ -387,9 +402,15 @@ function App() {
         } else {
             showToast(t('noBackupsCompleted'), 'warning');
         }
+
+        setIsProcessing(false);
+        setProcessingMessage('');
     };
 
     const runBackup = async (id: string, name: string) => {
+        setIsProcessing(true);
+        setProcessingMessage(t('backingUpSingle', { name }));
+
         try {
             if (VS_CODE_DEFS.some(e => e.id === id)) {
                 await window.abr.runBackupVSCode?.(id as any);
@@ -403,16 +424,27 @@ function App() {
         } catch (error) {
             console.error(`Failed to backup ${id}:`, error);
             showToast(t('backupConfigFailed', { name }), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
     const runRestore = async (id: string) => {
         if (!(await confirm(t('confirmRestore')))) return;
+
+        setIsProcessing(true);
+        setProcessingMessage(t('restoringSingle', { name: id }));
+
         try {
             await window.abr.runRestoreConfig?.(id as any);
+            showToast(t('restoreSuccess'), 'success');
         } catch (error) {
             console.error(`Failed to restore ${id}:`, error);
             showToast(t('settingsRestoreFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
@@ -420,6 +452,9 @@ function App() {
         const currentItems = MANAGER_DEFS.some(m => m.id === selectedManager) ? packageItems : extensionItems;
         const installedIds = currentItems.filter(it => selectedIds.includes(it.id) && it.isInstalled).map(it => it.id);
         if (installedIds.length === 0) return;
+
+        setIsProcessing(true);
+        setProcessingMessage(t('backingUpSelected'));
 
         try {
             if (MANAGER_DEFS.some(m => m.id === selectedManager)) {
@@ -438,6 +473,9 @@ function App() {
                 t('backupSelectedFailed', { error: error instanceof Error ? error.message : String(error) }),
                 'error'
             );
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
@@ -449,18 +487,30 @@ function App() {
         if (notInstalledIds.length === 0) return;
         if (!(await confirm(t('confirmRestore')))) return;
 
-        if (MANAGER_DEFS.some(m => m.id === selectedManager)) {
-            await window.abr.runRestore({
-                managerId: selectedManager as ManagerId,
-                identifiers: notInstalledIds,
-                mode: 'execute',
-            });
-        } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
-            await window.abr.runRestoreVSCode?.({
-                vscodeId: selectedManager as any,
-                identifiers: notInstalledIds,
-                mode: 'execute',
-            });
+        setIsProcessing(true);
+        setProcessingMessage(t('restoringSelected'));
+
+        try {
+            if (MANAGER_DEFS.some(m => m.id === selectedManager)) {
+                await window.abr.runRestore({
+                    managerId: selectedManager as ManagerId,
+                    identifiers: notInstalledIds,
+                    mode: 'execute',
+                });
+            } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
+                await window.abr.runRestoreVSCode?.({
+                    vscodeId: selectedManager as any,
+                    identifiers: notInstalledIds,
+                    mode: 'execute',
+                });
+            }
+            showToast(t('restoreSelectedSuccess'), 'success');
+        } catch (error) {
+            console.error('Failed to restore selected items:', error);
+            showToast(t('restoreSelectedFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
@@ -471,17 +521,32 @@ function App() {
         if (notInstalledExtensionsInWSLIds.length === 0) return;
         if (!(await confirm(t('confirmRestore')))) return;
 
-        await window.abr.runRestoreVSCodeWSL?.({
-            vscodeId: selectedManager as any,
-            identifiers: notInstalledExtensionsInWSLIds,
-            mode: 'execute',
-        });
+        setIsProcessing(true);
+        setProcessingMessage(t('restoringExtensionsInWSL'));
+
+        try {
+            await window.abr.runRestoreVSCodeWSL?.({
+                vscodeId: selectedManager as any,
+                identifiers: notInstalledExtensionsInWSLIds,
+                mode: 'execute',
+            });
+            showToast(t('restoreExtensionsInWSLSuccess'), 'success');
+        } catch (error) {
+            console.error('Failed to restore extensions in WSL:', error);
+            showToast(t('restoreExtensionsInWSLFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
+        }
     };
 
     const runGenerateScript = async () => {
         const currentItems = MANAGER_DEFS.some(m => m.id === selectedManager) ? packageItems : extensionItems;
         const selectedItemIds = currentItems.filter(it => selectedIds.includes(it.id)).map(it => it.id);
         if (selectedItemIds.length === 0) return;
+
+        setIsProcessing(true);
+        setProcessingMessage(t('generatingScript'));
 
         try {
             let result;
@@ -506,6 +571,9 @@ function App() {
         } catch (error) {
             console.error('Failed to generate script:', error);
             showToast(t('scriptGenerationFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
@@ -521,6 +589,10 @@ function App() {
 
     const backupVSCodeSettings = async () => {
         if (!VS_CODE_DEFS.some(e => e.id === selectedManager)) return;
+
+        setIsProcessing(true);
+        setProcessingMessage(t('backingUpSettings'));
+
         try {
             await window.abr.runBackupVSCode?.(selectedManager as any);
             await refreshMetadata();
@@ -528,18 +600,28 @@ function App() {
         } catch (error) {
             console.error('Failed to backup VSCode settings:', error);
             showToast(t('settingsBackupFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 
     const restoreVSCodeSettings = async () => {
         if (!VS_CODE_DEFS.some(e => e.id === selectedManager)) return;
         if (!(await confirm(t('confirmRestoreSettings')))) return;
+
+        setIsProcessing(true);
+        setProcessingMessage(t('restoringSettings'));
+
         try {
             await window.abr.restoreVSCodeSettings?.(selectedManager as any);
             showToast(t('settingsRestoreSuccess'), 'success');
         } catch (error) {
             console.error('Failed to restore VSCode settings:', error);
             showToast(t('settingsRestoreFailed'), 'error');
+        } finally {
+            setIsProcessing(false);
+            setProcessingMessage('');
         }
     };
 

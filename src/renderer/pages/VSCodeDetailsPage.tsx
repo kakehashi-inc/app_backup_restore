@@ -13,6 +13,7 @@ import {
     ListItemIcon,
     CircularProgress,
     Box,
+    Backdrop,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import useAppStore from '../store/useAppStore';
@@ -49,6 +50,8 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
         progressMessage,
         showWSLView,
         detectedApps,
+        isProcessing,
+        processingMessage,
         setSelectedIds,
         setSelectedIdsInWSL,
         setShowWSLView,
@@ -72,10 +75,20 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
                         {t('vscodeSettings')}
                     </Typography>
-                    <Button variant='contained' color='primary' onClick={onBackupSettings} disabled={loadingItems}>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={onBackupSettings}
+                        disabled={loadingItems || isProcessing}
+                    >
                         {t('backupSettings')}
                     </Button>
-                    <Button variant='outlined' color='primary' onClick={onRestoreSettings} disabled={loadingItems}>
+                    <Button
+                        variant='outlined'
+                        color='primary'
+                        onClick={onRestoreSettings}
+                        disabled={loadingItems || isProcessing}
+                    >
                         {t('restoreSettings')}
                     </Button>
                     <Box sx={{ flex: 1 }} />
@@ -107,7 +120,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
 
                 {/* Action buttons */}
                 <Stack direction='row' spacing={2} alignItems='center'>
-                    <Button variant='outlined' onClick={onRefresh} disabled={loadingItems}>
+                    <Button variant='outlined' onClick={onRefresh} disabled={loadingItems || isProcessing}>
                         {loadingItems ? (
                             <>
                                 <CircularProgress size={16} sx={{ mr: 1 }} />
@@ -119,7 +132,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     </Button>
                     <Button
                         variant='contained'
-                        disabled={selectedInstalledCount === 0 || loadingItems}
+                        disabled={selectedInstalledCount === 0 || loadingItems || isProcessing}
                         onClick={onBackupSelected}
                     >
                         {t('backup')}
@@ -127,7 +140,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedNotInstalledCount === 0 || loadingItems}
+                        disabled={selectedNotInstalledCount === 0 || loadingItems || isProcessing}
                         onClick={onRestoreExecute}
                     >
                         {t('restore')}
@@ -135,7 +148,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedIds.length === 0 || loadingItems}
+                        disabled={selectedIds.length === 0 || loadingItems || isProcessing}
                         onClick={onGenerateScript}
                     >
                         {t('generateScript')}
@@ -152,7 +165,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                 size='small'
                                 variant='outlined'
                                 onClick={() => setSelectedIds(extensionItems.map((it: MergedPackageItem) => it.id))}
-                                disabled={loadingItems || extensionItems.length === 0}
+                                disabled={loadingItems || extensionItems.length === 0 || isProcessing}
                             >
                                 {t('selectAll')}
                             </Button>
@@ -160,7 +173,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                 size='small'
                                 variant='outlined'
                                 onClick={() => setSelectedIds([])}
-                                disabled={loadingItems}
+                                disabled={loadingItems || isProcessing}
                             >
                                 {t('clearAll')}
                             </Button>
@@ -170,7 +183,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                 onClick={() =>
                                     setSelectedIds(extensionItems.filter(it => it.isInstalled).map(it => it.id))
                                 }
-                                disabled={loadingItems || extensionItems.length === 0}
+                                disabled={loadingItems || extensionItems.length === 0 || isProcessing}
                             >
                                 {t('selectInstalled')}
                             </Button>
@@ -180,7 +193,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                 onClick={() =>
                                     setSelectedIds(extensionItems.filter(it => !it.isInstalled).map(it => it.id))
                                 }
-                                disabled={loadingItems || extensionItems.length === 0}
+                                disabled={loadingItems || extensionItems.length === 0 || isProcessing}
                             >
                                 {t('selectNotInstalled')}
                             </Button>
@@ -201,7 +214,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                 size='small'
                                 variant='outlined'
                                 onClick={() => setSelectedIdsInWSL([])}
-                                disabled={loadingItems}
+                                disabled={loadingItems || isProcessing}
                             >
                                 {t('clearAll')}
                             </Button>
@@ -232,7 +245,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                             <Button
                                 size='small'
                                 variant='contained'
-                                disabled={selectedIdsInWSLNotInstalledCount === 0 || loadingItems}
+                                disabled={selectedIdsInWSLNotInstalledCount === 0 || loadingItems || isProcessing}
                                 onClick={onRestoreExecuteExtensionsInWSL}
                             >
                                 {t('restore')} ({selectedIdsInWSLNotInstalledCount})
@@ -268,6 +281,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                                       )
                                                   }
                                                   checked={checked}
+                                                  disabled={isProcessing}
                                               />
                                           </ListItemIcon>
                                           <ListItemText
@@ -314,6 +328,7 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                                                       )
                                                   }
                                                   checked={checked}
+                                                  disabled={isProcessing}
                                               />
                                           </ListItemIcon>
                                           <ListItemText
@@ -345,6 +360,14 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     </List>
                 )}
             </Paper>
+
+            {/* Processing overlay */}
+            <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={isProcessing}>
+                <Stack direction='column' alignItems='center' spacing={2}>
+                    <CircularProgress color='inherit' />
+                    <Typography variant='h6'>{processingMessage || t('processing')}</Typography>
+                </Stack>
+            </Backdrop>
         </Container>
     );
 };
