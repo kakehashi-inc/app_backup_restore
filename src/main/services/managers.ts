@@ -11,7 +11,8 @@ import type {
     VSCodeExtensionItem,
     VSCodeId,
 } from '../../shared/types';
-import { isCommandAvailable, runCommand } from '../utils/exec';
+import { MANAGER_DEFS, VS_CODE_DEFS } from '../../shared/constants';
+import { isPackageManagerAvailable, runCommand } from '../utils/exec';
 import { readJsonFile, writeJsonFile } from '../utils/fsx';
 import { loadConfig } from './config';
 
@@ -129,24 +130,26 @@ async function getWingetDisplayName(packageId: string): Promise<string> {
 }
 
 export async function detectManagers() {
-    const [winget, scoop, choco, vscode, cursor, voideditor] = await Promise.all([
-        isCommandAvailable('winget'),
-        isCommandAvailable('scoop'),
-        isCommandAvailable('choco'),
-        isCommandAvailable('code'),
-        isCommandAvailable('cursor'),
-        isCommandAvailable('void'),
-    ]);
-    return {
-        winget,
-        msstore: winget, // msstore listing depends on winget source
-        scoop,
-        chocolatey: choco,
-        vscode,
-        cursor,
-        voideditor,
-        wslDetected: os.platform() === 'win32', // simple hint
-    };
+    const currentOS = os.platform() as 'win32' | 'darwin' | 'linux';
+    const results: Record<string, boolean> = {};
+
+    // Get IDs that are available on current OS
+    const availableManagerIds = MANAGER_DEFS.filter(def => def.os.includes(currentOS)).map(def => def.id);
+
+    const availableVscodeIds = VS_CODE_DEFS.filter(def => def.os.includes(currentOS)).map(def => def.id);
+
+    // WSL is only available on Windows
+    const allIds = [...availableManagerIds, ...availableVscodeIds, ...(currentOS === 'win32' ? ['wsl'] : [])];
+
+    // Check availability for OS-compatible IDs only
+    const availabilityResults = await Promise.all(allIds.map(id => isPackageManagerAvailable(id)));
+
+    // Map results back to IDs
+    allIds.forEach((id, index) => {
+        results[id] = availabilityResults[index];
+    });
+
+    return results;
 }
 
 async function getWingetSourceApps(source: string): Promise<WingetItem[]> {
@@ -259,17 +262,11 @@ export async function listChocolatey(): Promise<ChocolateyItem[]> {
 }
 
 export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
-    const commandMap: Record<VSCodeId, string> = {
-        vscode: 'code',
-        cursor: 'cursor',
-        voideditor: 'void',
-    };
+    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
+    if (!vscodeDef) return [];
 
-    const command = commandMap[vscodeId];
+    const command = vscodeDef.command;
     if (!command) return [];
-
-    const available = await isCommandAvailable(command);
-    if (!available) return [];
 
     try {
         const { stdout } = await runCommand(command, ['--list-extensions', '--show-versions']);
@@ -303,18 +300,11 @@ export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCod
     // Only works on Windows
     if (os.platform() !== 'win32') return [];
 
-    const commandMap: Record<VSCodeId, string> = {
-        vscode: 'code',
-        cursor: 'cursor',
-        voideditor: 'void',
-    };
+    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
+    if (!vscodeDef) return [];
 
-    const command = commandMap[vscodeId];
+    const command = vscodeDef.command;
     if (!command) return [];
-
-    // Check if WSL is available
-    const wslAvailable = await isCommandAvailable('wsl');
-    if (!wslAvailable) return [];
 
     try {
         const { stdout, code } = await runCommand('wsl', ['-e', command, '--list-extensions', '--show-versions']);

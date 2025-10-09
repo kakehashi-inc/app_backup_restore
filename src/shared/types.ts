@@ -65,9 +65,27 @@ export type ConfigRestoreRequest = {
     configAppId: string;
 };
 
+export type ManagerDef = {
+    id: ManagerId;
+    label: string;
+    os: ('win32' | 'darwin' | 'linux')[];
+};
+
+export type VSCodeDef = {
+    id: VSCodeId;
+    label: string;
+    command: string;
+    os: ('win32' | 'darwin' | 'linux')[];
+    settingsPaths: {
+        win32: string;
+        darwin: string;
+        linux: string;
+    };
+};
+
 export type ConfigAppDef = {
     id: string;
-    label: string; // UI表示用ラベル
+    label: string;
     os: ('win32' | 'darwin' | 'linux')[];
     files: {
         win32?: string[];

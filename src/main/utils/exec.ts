@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { platform } from 'os';
+import { VS_CODE_DEFS } from '../../shared/constants';
 
 export type ExecResult = {
     stdout: string;
@@ -29,17 +30,32 @@ export function runCommand(
     });
 }
 
-export async function isCommandAvailable(command: string): Promise<boolean> {
-    // On Windows, rely on where.exe; on POSIX, which
+export async function findCommand(command: string): Promise<boolean> {
     const isWin = platform() === 'win32';
     const finder = isWin ? 'where' : 'which';
     const res = await runCommand(finder, [command]);
-    if (res.code !== 0 || !res.stdout.trim()) return false;
+    return res.code === 0 && res.stdout.trim() !== '';
+}
 
-    // Special handling for scoop similar to Python script
-    if (isWin && command === 'scoop') {
-        const ps = await runCommand('powershell', ['-Command', 'scoop --version'], {});
-        return ps.code === 0;
+export async function isPackageManagerAvailable(id: string): Promise<boolean> {
+    // Map IDs to commands
+    switch (id) {
+        case 'winget':
+        case 'msstore': // msstore depends on winget
+            return await findCommand('winget');
+        case 'scoop':
+            return await findCommand('scoop');
+        case 'chocolatey':
+            return await findCommand('choco');
+        case 'wsl':
+            return await findCommand('wsl');
     }
-    return true;
+
+    // Check VS_CODE_DEFS
+    const vscodeDef = VS_CODE_DEFS.find(def => def.id === id);
+    if (vscodeDef) {
+        return await findCommand(vscodeDef.command);
+    }
+
+    return false;
 }

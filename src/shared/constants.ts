@@ -1,7 +1,7 @@
 import os from 'os';
 import path from 'path';
 
-import type { ManagerId, VSCodeId, ConfigAppDef } from './types';
+import type { ManagerId, VSCodeId, ManagerDef, VSCodeDef, ConfigAppDef } from './types';
 
 export const APP_DIR_NAME = '.abr';
 
@@ -73,18 +73,19 @@ export const IPC_CHANNELS = {
 } as const;
 
 // Manager definitions for UI
-export const MANAGER_DEFS = [
-    { id: 'winget' as const, label: 'Winget', os: ['win32'] as const },
-    { id: 'msstore' as const, label: 'Microsoft Store', os: ['win32'] as const },
-    { id: 'scoop' as const, label: 'Scoop', os: ['win32'] as const },
-    { id: 'chocolatey' as const, label: 'Chocolatey', os: ['win32'] as const },
-] as const;
+export const MANAGER_DEFS: readonly ManagerDef[] = [
+    { id: 'winget', label: 'Winget', os: ['win32'] },
+    { id: 'msstore', label: 'Microsoft Store', os: ['win32'] },
+    { id: 'scoop', label: 'Scoop', os: ['win32'] },
+    { id: 'chocolatey', label: 'Chocolatey', os: ['win32'] },
+];
 
 // VS Code-based IDE definitions (includes VS Code, Cursor, Void Editor)
-export const VS_CODE_DEFS = [
+export const VS_CODE_DEFS: readonly VSCodeDef[] = [
     {
-        id: 'vscode' as const,
+        id: 'vscode',
         label: 'VS Code',
+        os: ['win32', 'darwin', 'linux'],
         command: 'code',
         settingsPaths: {
             win32: '%APPDATA%\\Code\\User',
@@ -93,8 +94,9 @@ export const VS_CODE_DEFS = [
         },
     },
     {
-        id: 'cursor' as const,
+        id: 'cursor',
         label: 'Cursor',
+        os: ['win32', 'darwin', 'linux'],
         command: 'cursor',
         settingsPaths: {
             win32: '%APPDATA%\\Cursor\\User',
@@ -103,8 +105,9 @@ export const VS_CODE_DEFS = [
         },
     },
     {
-        id: 'voideditor' as const,
+        id: 'voideditor',
         label: 'Void Editor',
+        os: ['win32', 'darwin', 'linux'],
         command: 'void',
         settingsPaths: {
             win32: '%APPDATA%\\Void\\User',
@@ -112,7 +115,7 @@ export const VS_CODE_DEFS = [
             linux: '~/.config/Void/User',
         },
     },
-] as const;
+];
 
 // Config app definitions
 export const CONFIG_APP_DEFS: ConfigAppDef[] = [

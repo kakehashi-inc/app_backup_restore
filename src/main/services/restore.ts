@@ -5,6 +5,7 @@ import { runCommand } from '../utils/exec';
 import { copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
+    VS_CODE_DEFS,
     getVSCodeSettingsPath,
     getVSCodeBackupFileName,
     getConfigAppBackupFileName,
@@ -57,13 +58,12 @@ export async function writeInstallScript(req: RestoreRequest, outputPath?: strin
 }
 
 function buildVSCodeInstallCommand(vscodeId: VSCodeId, extensionId: string): { cmd: string; args: string[] } {
-    const commandMap: Record<VSCodeId, string> = {
-        vscode: 'code',
-        cursor: 'cursor',
-        voideditor: 'void',
-    };
+    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
+    if (!vscodeDef) {
+        throw new Error(`Unknown VSCode ID: ${vscodeId}`);
+    }
 
-    const command = commandMap[vscodeId];
+    const command = vscodeDef.command;
     return { cmd: command, args: ['--install-extension', extensionId] };
 }
 
