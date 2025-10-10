@@ -8,8 +8,15 @@ import type {
     MsStoreItem,
     ScoopItem,
     WingetItem,
+    HomebrewItem,
+    AptItem,
+    YumItem,
+    PacmanItem,
+    SnapItem,
+    FlatpakItem,
     VSCodeExtensionItem,
     VSCodeId,
+    MergedPackageItem,
 } from '../../shared/types';
 import { MANAGER_DEFS, VS_CODE_DEFS } from '../../shared/constants';
 import { isPackageManagerAvailable, runCommand, runCommandInWSL } from '../utils/exec';
@@ -357,4 +364,286 @@ export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCod
         console.error(`Failed to list WSL extensions for ${vscodeId}:`, error);
         return [];
     }
+}
+
+// Homebrew functions
+export async function listHomebrew(): Promise<HomebrewItem[]> {
+    try {
+        const { stdout, code } = await runCommand('brew', ['list', '--formula', '--versions']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: HomebrewItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            const parts = line.trim().split(' ');
+            if (parts.length >= 2) {
+                const name = parts[0];
+                const version = parts[1];
+                items.push({ Name: name, Version: version });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// APT functions
+export async function listApt(): Promise<AptItem[]> {
+    try {
+        const { stdout, code } = await runCommand('dpkg', ['-l']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: AptItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header lines
+            if (line.startsWith('Desired') || line.startsWith('||/') || line.startsWith('+++')) continue;
+
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 3 && parts[0] === 'ii') {
+                const packageName = parts[1];
+                const version = parts[2];
+                const architecture = parts[3];
+                items.push({ Package: packageName, Version: version, Architecture: architecture });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// YUM functions
+export async function listYum(): Promise<YumItem[]> {
+    try {
+        const { stdout, code } = await runCommand('yum', ['list', 'installed']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: YumItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header lines
+            if (line.includes('Installed Packages') || line.includes('Loaded plugins')) continue;
+
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 3) {
+                const name = parts[0];
+                const version = parts[1];
+                const release = parts[2];
+                const architecture = parts[3] || 'noarch';
+                items.push({ Name: name, Version: version, Release: release, Architecture: architecture });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// DNF functions (same as YUM)
+export async function listDnf(): Promise<YumItem[]> {
+    try {
+        const { stdout, code } = await runCommand('dnf', ['list', 'installed']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: YumItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header lines
+            if (line.includes('Installed Packages') || line.includes('Last metadata')) continue;
+
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 3) {
+                const name = parts[0];
+                const version = parts[1];
+                const release = parts[2];
+                const architecture = parts[3] || 'noarch';
+                items.push({ Name: name, Version: version, Release: release, Architecture: architecture });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// Pacman functions
+export async function listPacman(): Promise<PacmanItem[]> {
+    try {
+        const { stdout, code } = await runCommand('pacman', ['-Q']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: PacmanItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            const parts = line.trim().split(' ');
+            if (parts.length >= 2) {
+                const name = parts[0];
+                const version = parts[1];
+                items.push({ Name: name, Version: version });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// Zypper functions
+export async function listZypper(): Promise<YumItem[]> {
+    try {
+        const { stdout, code } = await runCommand('zypper', ['se', '-i']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: YumItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header lines
+            if (line.includes('S | Name') || line.includes('--+--')) continue;
+
+            const parts = line.trim().split('|');
+            if (parts.length >= 4) {
+                const name = parts[1].trim();
+                const version = parts[2].trim();
+                const architecture = parts[3].trim();
+                items.push({ Name: name, Version: version, Architecture: architecture });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// Snap functions
+export async function listSnap(): Promise<SnapItem[]> {
+    try {
+        const { stdout, code } = await runCommand('snap', ['list']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: SnapItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header line
+            if (line.includes('Name') && line.includes('Version')) continue;
+
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                const name = parts[0];
+                const version = parts[1];
+                const revision = parts[2];
+                const tracking = parts[3];
+                items.push({ Name: name, Version: version, Revision: revision, Tracking: tracking });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// Flatpak functions
+export async function listFlatpak(): Promise<FlatpakItem[]> {
+    try {
+        const { stdout, code } = await runCommand('flatpak', ['list', '--app']);
+        if (code !== 0 || !stdout) return [];
+
+        const items: FlatpakItem[] = [];
+        const lines = stdout.trim().split('\n');
+
+        for (const line of lines) {
+            // Skip header line
+            if (line.includes('Name') && line.includes('Application')) continue;
+
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 3) {
+                const name = parts[0];
+                const application = parts[1];
+                const version = parts[2];
+                const branch = parts[3];
+                const origin = parts[4];
+                items.push({ Name: name, Application: application, Version: version, Branch: branch, Origin: origin });
+            }
+        }
+
+        return items;
+    } catch {
+        return [];
+    }
+}
+
+// Helper functions to convert manager items to MergedPackageItem
+export function convertHomebrewToMerged(items: HomebrewItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Name,
+        name: item.Name,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
+}
+
+export function convertAptToMerged(items: AptItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Package,
+        name: item.Package,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
+}
+
+export function convertYumToMerged(items: YumItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Name,
+        name: item.Name,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
+}
+
+export function convertPacmanToMerged(items: PacmanItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Name,
+        name: item.Name,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
+}
+
+export function convertSnapToMerged(items: SnapItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Name,
+        name: item.Name,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
+}
+
+export function convertFlatpakToMerged(items: FlatpakItem[]): MergedPackageItem[] {
+    return items.map(item => ({
+        id: item.Name,
+        name: item.Name,
+        version: item.Version,
+        isInstalled: true,
+        source: 'installed' as const,
+    }));
 }

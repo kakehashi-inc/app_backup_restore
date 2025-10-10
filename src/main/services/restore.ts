@@ -28,6 +28,22 @@ function buildInstallCommand(
                 cmd: 'choco',
                 args: version ? ['install', identifier, '--version', version] : ['install', identifier],
             };
+        case 'homebrew':
+            return { cmd: 'brew', args: ['install', identifier] };
+        case 'apt':
+            return { cmd: 'sudo', args: ['apt', 'install', '-y', identifier] };
+        case 'yum':
+            return { cmd: 'sudo', args: ['yum', 'install', '-y', identifier] };
+        case 'dnf':
+            return { cmd: 'sudo', args: ['dnf', 'install', '-y', identifier] };
+        case 'pacman':
+            return { cmd: 'sudo', args: ['pacman', '-S', '--noconfirm', identifier] };
+        case 'zypper':
+            return { cmd: 'sudo', args: ['zypper', 'install', '-y', identifier] };
+        case 'snap':
+            return { cmd: 'sudo', args: ['snap', 'install', identifier] };
+        case 'flatpak':
+            return { cmd: 'flatpak', args: ['install', '-y', 'flathub', identifier] };
     }
 }
 

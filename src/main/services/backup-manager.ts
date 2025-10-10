@@ -14,6 +14,14 @@ import {
     listMsStore,
     listScoop,
     listChocolatey,
+    listHomebrew,
+    listApt,
+    listYum,
+    listDnf,
+    listPacman,
+    listZypper,
+    listSnap,
+    listFlatpak,
     listVSCodeExtensions,
     listVSCodeExtensionsWSL,
     detectManagers,
@@ -40,6 +48,22 @@ export class BackupManager {
                 return listScoop();
             case 'chocolatey':
                 return listChocolatey();
+            case 'homebrew':
+                return listHomebrew();
+            case 'apt':
+                return listApt();
+            case 'yum':
+                return listYum();
+            case 'dnf':
+                return listDnf();
+            case 'pacman':
+                return listPacman();
+            case 'zypper':
+                return listZypper();
+            case 'snap':
+                return listSnap();
+            case 'flatpak':
+                return listFlatpak();
         }
     }
 

@@ -78,6 +78,14 @@ export const MANAGER_DEFS: readonly ManagerDef[] = [
     { id: 'msstore', label: 'Microsoft Store', os: ['win32'] },
     { id: 'scoop', label: 'Scoop', os: ['win32'] },
     { id: 'chocolatey', label: 'Chocolatey', os: ['win32'] },
+    { id: 'homebrew', label: 'Homebrew', os: ['darwin', 'linux'] },
+    { id: 'apt', label: 'APT', os: ['linux'] },
+    { id: 'yum', label: 'YUM', os: ['linux'] },
+    { id: 'dnf', label: 'DNF', os: ['linux'] },
+    { id: 'pacman', label: 'Pacman', os: ['linux'] },
+    { id: 'zypper', label: 'Zypper', os: ['linux'] },
+    { id: 'snap', label: 'Snap', os: ['linux'] },
+    { id: 'flatpak', label: 'Flatpak', os: ['linux'] },
 ];
 
 // VS Code-based IDE definitions (includes VS Code, Cursor, Void Editor)

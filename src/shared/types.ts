@@ -1,4 +1,16 @@
-export type ManagerId = 'winget' | 'msstore' | 'scoop' | 'chocolatey';
+export type ManagerId =
+    | 'winget'
+    | 'msstore'
+    | 'scoop'
+    | 'chocolatey'
+    | 'homebrew'
+    | 'apt'
+    | 'yum'
+    | 'dnf'
+    | 'pacman'
+    | 'zypper'
+    | 'snap'
+    | 'flatpak';
 
 export type VSCodeId = 'vscode' | 'cursor' | 'voideditor';
 
@@ -22,6 +34,46 @@ export type ChocolateyItem = {
     Version: string;
 };
 
+export type HomebrewItem = {
+    Name: string;
+    Version: string;
+    InstalledOnRequest?: boolean;
+};
+
+export type AptItem = {
+    Package: string;
+    Version: string;
+    Architecture?: string;
+};
+
+export type YumItem = {
+    Name: string;
+    Version: string;
+    Release?: string;
+    Architecture?: string;
+};
+
+export type PacmanItem = {
+    Name: string;
+    Version: string;
+    Repository?: string;
+};
+
+export type SnapItem = {
+    Name: string;
+    Version: string;
+    Revision?: string;
+    Tracking?: string;
+};
+
+export type FlatpakItem = {
+    Name: string;
+    Application: string;
+    Version: string;
+    Branch?: string;
+    Origin?: string;
+};
+
 export type VSCodeExtensionItem = {
     id: string; // Extension identifier (e.g., ms-python.python)
     version?: string;
@@ -32,6 +84,14 @@ export type PackageList = {
     msstore?: MsStoreItem[];
     scoop?: ScoopItem[];
     chocolatey?: ChocolateyItem[];
+    homebrew?: HomebrewItem[];
+    apt?: AptItem[];
+    yum?: YumItem[];
+    dnf?: YumItem[];
+    pacman?: PacmanItem[];
+    zypper?: YumItem[];
+    snap?: SnapItem[];
+    flatpak?: FlatpakItem[];
 };
 
 export type AppConfig = {

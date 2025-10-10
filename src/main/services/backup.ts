@@ -17,6 +17,14 @@ import {
     listMsStore,
     listScoop,
     listChocolatey,
+    listHomebrew,
+    listApt,
+    listYum,
+    listDnf,
+    listPacman,
+    listZypper,
+    listSnap,
+    listFlatpak,
     listVSCodeExtensions,
     listVSCodeExtensionsWSL,
 } from './managers';
@@ -59,6 +67,70 @@ async function backupManager(
                     items = items.filter(i => identifiers.includes(i.PackageId));
                 }
                 break;
+            case 'homebrew':
+                items = await listHomebrew();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'apt':
+                items = await listApt();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Package));
+                }
+                break;
+            case 'yum':
+                items = await listYum();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'dnf':
+                items = await listDnf();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'pacman':
+                items = await listPacman();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'zypper':
+                items = await listZypper();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'snap':
+                items = await listSnap();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
+            case 'flatpak':
+                items = await listFlatpak();
+                file = path.join(backupDir, getManagerBackupFileName(manager));
+                // Filter by identifiers if provided
+                if (identifiers && identifiers.length > 0) {
+                    items = items.filter(i => identifiers.includes(i.Name));
+                }
+                break;
             default:
                 throw new Error(`Unknown manager: ${manager}`);
         }
@@ -74,8 +146,18 @@ async function backupManager(
 }
 
 export async function runBackup(backupDir: string, managers?: ManagerId[]): Promise<{ written: string[] }> {
-    const targetManagers: ManagerId[] =
-        managers && managers.length ? managers : ['winget', 'msstore', 'scoop', 'chocolatey'];
+    const currentOS = os.platform() as 'win32' | 'darwin' | 'linux';
+    let defaultManagers: ManagerId[] = [];
+
+    if (currentOS === 'win32') {
+        defaultManagers = ['winget', 'msstore', 'scoop', 'chocolatey'];
+    } else if (currentOS === 'darwin') {
+        defaultManagers = ['homebrew'];
+    } else if (currentOS === 'linux') {
+        defaultManagers = ['apt', 'yum', 'dnf', 'pacman', 'zypper', 'snap', 'flatpak'];
+    }
+
+    const targetManagers: ManagerId[] = managers && managers.length ? managers : defaultManagers;
 
     const written: string[] = [];
     const successfulManagers: ManagerId[] = [];

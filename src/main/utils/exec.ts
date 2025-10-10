@@ -103,6 +103,22 @@ export async function isPackageManagerAvailable(id: string): Promise<boolean> {
             return await findCommand('scoop');
         case 'chocolatey':
             return await findCommand('choco');
+        case 'homebrew':
+            return await findCommand('brew');
+        case 'apt':
+            return await findCommand('apt');
+        case 'yum':
+            return await findCommand('yum');
+        case 'dnf':
+            return await findCommand('dnf');
+        case 'pacman':
+            return await findCommand('pacman');
+        case 'zypper':
+            return await findCommand('zypper');
+        case 'snap':
+            return await findCommand('snap');
+        case 'flatpak':
+            return await findCommand('flatpak');
         case 'wsl':
             return await findCommand('wsl');
     }
