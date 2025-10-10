@@ -12,7 +12,6 @@ import type {
     AppInfo,
     AppLanguage,
     AppTheme,
-    BackupMetadata,
     VSCodeRestoreRequest,
 } from './types';
 
@@ -28,17 +27,11 @@ export type IpcApi = {
     listVSCodeExtensionsWSL?(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]>;
     readBackupList?(managerId: ManagerId): Promise<any[]>;
     readVSCodeBackupList?(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]>;
-    runBackup(managers?: ManagerId[]): Promise<{ written: string[]; metadataUpdated: boolean }>;
-    runBackupSelected?(
-        managerId: ManagerId,
-        identifiers: string[]
-    ): Promise<{ written: string[]; metadataUpdated: boolean }>;
-    runBackupVSCode?(
-        vscodeId: VSCodeId,
-        identifiers?: string[]
-    ): Promise<{ written: string[]; metadataUpdated: boolean }>;
-    runBackupConfig?(configAppId: string): Promise<{ written: string[]; metadataUpdated: boolean }>;
-    getBackupMetadata?(): Promise<BackupMetadata>;
+    runBackup(managers?: ManagerId[]): Promise<{ written: string[] }>;
+    runBackupSelected?(managerId: ManagerId, identifiers: string[]): Promise<{ written: string[] }>;
+    runBackupVSCode?(vscodeId: VSCodeId, identifiers?: string[]): Promise<{ written: string[] }>;
+    runBackupConfig?(configAppId: string): Promise<{ written: string[] }>;
+    getBackupLastModified?(id: string): Promise<string | null>;
     runRestore(req: RestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
     runRestoreVSCode?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
     runRestoreVSCodeWSL?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;

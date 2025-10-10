@@ -40,8 +40,6 @@ export type AppConfig = {
     darkMode?: boolean; // dark mode enabled/disabled
 };
 
-export type BackupMetadata = Record<string, { last_backup: string } | undefined>;
-
 export type DetectResult = Record<ManagerId, boolean> & { wslDetected?: boolean };
 
 export type RestoreMode = 'execute' | 'script';

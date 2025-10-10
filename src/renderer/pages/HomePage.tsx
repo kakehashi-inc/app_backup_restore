@@ -25,14 +25,20 @@ interface HomePageProps {
     onRunBackupAll: (ids: string[]) => void;
     onRunBackup: (id: string, name: string) => void;
     onRunRestore: (id: string) => void;
+    onRefreshBackupDates: () => Promise<Record<string, string | null>>;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAll, onRunBackup, onRunRestore }) => {
+export const HomePage: React.FC<HomePageProps> = ({
+    onOpenDetails,
+    onRunBackupAll,
+    onRunBackup,
+    onRunRestore,
+    onRefreshBackupDates,
+}) => {
     const { t } = useTranslation();
     const {
         config,
         info,
-        metadata,
         detectedApps,
         configAvailability,
         showUnavailablePackages,
@@ -43,7 +49,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
         setShowUnavailableConfigs,
     } = useAppStore();
 
-    const formatDateTime = (isoString: string | undefined, locale: string): string => {
+    const formatDateTime = (isoString: string | null, locale: string): string => {
         if (!isoString) return '-';
         try {
             const date = new Date(isoString);
@@ -65,14 +71,26 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
 
     const os = info?.os || 'win32';
 
+    const [backupDates, setBackupDates] = React.useState<Record<string, string | null>>({});
+
+    // Load backup dates for all items
+    React.useEffect(() => {
+        const loadBackupDates = async () => {
+            const dates = await onRefreshBackupDates();
+            setBackupDates(dates);
+        };
+
+        loadBackupDates();
+    }, [config.backupDirectory, os, onRefreshBackupDates]);
+
     const pmRows = MANAGER_DEFS.filter(m => m.os.includes(os as any)).map(m => ({
         id: m.id,
         name: m.label,
-        last: metadata?.[m.id]?.last_backup,
+        last: backupDates[m.id],
     }));
 
-    const vscodeRows = VS_CODE_DEFS.map(e => ({ id: e.id, name: e.label, last: metadata?.[e.id]?.last_backup }));
-    const configRows = CONFIG_APP_DEFS.map(c => ({ id: c.id, name: c.label, last: metadata?.[c.id]?.last_backup }));
+    const vscodeRows = VS_CODE_DEFS.map(e => ({ id: e.id, name: e.label, last: backupDates[e.id] }));
+    const configRows = CONFIG_APP_DEFS.map(c => ({ id: c.id, name: c.label, last: backupDates[c.id] }));
 
     // Split packages/extensions into available and unavailable
     const allPackageRows = [...pmRows, ...vscodeRows];
@@ -93,7 +111,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                         <Button
                             variant='contained'
                             disabled={!config.backupDirectory || availablePackageRows.length === 0}
-                            onClick={() => onRunBackupAll(availablePackageRows.map(r => r.id))}
+                            onClick={async () => {
+                                await onRunBackupAll(availablePackageRows.map(r => r.id));
+                                const dates = await onRefreshBackupDates();
+                                setBackupDates(dates);
+                            }}
                         >
                             {t('backupAll')}
                         </Button>
@@ -104,7 +126,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ width: '100%' }}>{t('appColumn')}</TableCell>
-                                <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>{t('lastBackup')}</TableCell>
+                                <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>{t('lastModified')}</TableCell>
                                 <TableCell sx={{ width: '220px', whiteSpace: 'nowrap' }}>{t('actions')}</TableCell>
                             </TableRow>
                         </TableHead>
@@ -126,7 +148,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                                                 size='small'
                                                 variant='contained'
                                                 disabled={!config.backupDirectory}
-                                                onClick={() => onRunBackup(r.id, r.name)}
+                                                onClick={async () => {
+                                                    await onRunBackup(r.id, r.name);
+                                                    const dates = await onRefreshBackupDates();
+                                                    setBackupDates(dates);
+                                                }}
                                             >
                                                 {t('backup')}
                                             </Button>
@@ -156,7 +182,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                                     <TableRow>
                                         <TableCell sx={{ width: '100%' }}>{t('appColumn')}</TableCell>
                                         <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>
-                                            {t('lastBackup')}
+                                            {t('lastModified')}
                                         </TableCell>
                                         <TableCell sx={{ width: '220px', whiteSpace: 'nowrap' }}>
                                             {t('actions')}
@@ -191,7 +217,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                     <Button
                         variant='contained'
                         disabled={!config.backupDirectory || availableConfigRows.length === 0}
-                        onClick={() => onRunBackupAll(availableConfigRows.map(r => r.id))}
+                        onClick={async () => {
+                            await onRunBackupAll(availableConfigRows.map(r => r.id));
+                            const dates = await onRefreshBackupDates();
+                            setBackupDates(dates);
+                        }}
                     >
                         {t('backupAll')}
                     </Button>
@@ -201,7 +231,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ width: '100%' }}>{t('appColumn')}</TableCell>
-                                <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>{t('lastBackup')}</TableCell>
+                                <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>{t('lastModified')}</TableCell>
                                 <TableCell sx={{ width: '220px', whiteSpace: 'nowrap' }}>{t('actions')}</TableCell>
                             </TableRow>
                         </TableHead>
@@ -218,7 +248,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                                                 size='small'
                                                 variant='contained'
                                                 disabled={!config.backupDirectory}
-                                                onClick={() => onRunBackup(r.id, r.name)}
+                                                onClick={async () => {
+                                                    await onRunBackup(r.id, r.name);
+                                                    const dates = await onRefreshBackupDates();
+                                                    setBackupDates(dates);
+                                                }}
                                             >
                                                 {t('backup')}
                                             </Button>
@@ -248,7 +282,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenDetails, onRunBackupAl
                                     <TableRow>
                                         <TableCell sx={{ width: '100%' }}>{t('appColumn')}</TableCell>
                                         <TableCell sx={{ width: '200px', whiteSpace: 'nowrap' }}>
-                                            {t('lastBackup')}
+                                            {t('lastModified')}
                                         </TableCell>
                                         <TableCell sx={{ width: '220px', whiteSpace: 'nowrap' }}>
                                             {t('actions')}

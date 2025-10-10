@@ -9,6 +9,7 @@ export default {
     restore: '復元',
     backupAll: 'すべてバックアップ',
     lastBackup: '最終バックアップ',
+    lastModified: '最終更新日時',
     actions: '操作',
     confirmBulkBackup: 'このセクション内の全項目をバックアップします。実行してもよろしいですか？',
     confirmRestore: '選択した項目を復元します。システムに変更が加わる可能性があります。実行してもよろしいですか？',

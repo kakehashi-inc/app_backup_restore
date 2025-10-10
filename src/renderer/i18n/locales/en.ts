@@ -9,6 +9,7 @@ export default {
     restore: 'Restore',
     backupAll: 'Backup All',
     lastBackup: 'Last Backup',
+    lastModified: 'Last Modified',
     actions: 'Actions',
     confirmBulkBackup: 'This will back up all items in this section. Proceed?',
     confirmRestore: 'You are about to restore the selected items. This may modify your system. Proceed?',

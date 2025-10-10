@@ -17,7 +17,7 @@ const IPC_CHANNELS = {
     BACKUP_RUN_SELECTED: 'backup:runSelected',
     BACKUP_RUN_VSCODE: 'backup:runVSCode',
     BACKUP_RUN_CONFIG: 'backup:runConfig',
-    BACKUP_GET_METADATA: 'backup:getMetadata',
+    BACKUP_GET_LAST_MODIFIED: 'backup:getLastModified',
     BACKUP_READ_LIST: 'backup:readList',
     BACKUP_READ_VSCODE_LIST: 'backup:readVSCodeList',
     RESTORE_RUN: 'restore:run',
@@ -83,8 +83,8 @@ const api: IpcApi = {
     async runBackupSelected(managerId, identifiers) {
         return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RUN_SELECTED, managerId, identifiers);
     },
-    async getBackupMetadata() {
-        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_GET_METADATA);
+    async getBackupLastModified(id: string) {
+        return ipcRenderer.invoke(IPC_CHANNELS.BACKUP_GET_LAST_MODIFIED, id);
     },
     async runRestore(req) {
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN, req);

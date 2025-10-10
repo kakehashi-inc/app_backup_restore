@@ -13,8 +13,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { PackageManagerDetailsPage } from './pages/PackageManagerDetailsPage';
 import { VSCodeDetailsPage } from './pages/VSCodeDetailsPage';
 import { ConfigDetailsPage } from './pages/ConfigDetailsPage';
-import { ScriptDialog } from './components/ScriptDialog';
 import { MANAGER_DEFS, VS_CODE_DEFS, CONFIG_APP_DEFS } from '@shared/constants';
+import { ScriptDialog } from './components/ScriptDialog';
 import type { ManagerId, VSCodeId, MergedPackageItem } from '@shared/types';
 
 function App() {
@@ -40,7 +40,6 @@ function App() {
         setConfig,
         setView,
         setInfo,
-        setMetadata,
         setDetectedApps,
         setConfigAvailability,
         setProgressMessage,
@@ -72,19 +71,6 @@ function App() {
         });
     }, [setConfig, setView, setInfo, i18n]);
 
-    // Load metadata
-    React.useEffect(() => {
-        (async () => {
-            try {
-                const md = (await window.abr.getBackupMetadata?.()) || {};
-                setMetadata(md);
-            } catch (error) {
-                console.log('Backup metadata not available yet:', error);
-                setMetadata({});
-            }
-        })();
-    }, [setMetadata]);
-
     // Detect managers
     React.useEffect(() => {
         (async () => {
@@ -92,6 +78,44 @@ function App() {
             setDetectedApps(detected);
         })();
     }, [setDetectedApps]);
+
+    // Load backup dates function
+    const loadBackupDates = React.useCallback(async (): Promise<Record<string, string | null>> => {
+        const dates: Record<string, string | null> = {};
+        const os = info?.os || 'win32';
+
+        // Load dates for package managers
+        for (const manager of MANAGER_DEFS.filter(m => m.os.includes(os as any))) {
+            try {
+                const date = await window.abr.getBackupLastModified?.(manager.id);
+                dates[manager.id] = date || null;
+            } catch (error) {
+                dates[manager.id] = null;
+            }
+        }
+
+        // Load dates for VSCode
+        for (const vscode of VS_CODE_DEFS) {
+            try {
+                const date = await window.abr.getBackupLastModified?.(vscode.id);
+                dates[vscode.id] = date || null;
+            } catch (error) {
+                dates[vscode.id] = null;
+            }
+        }
+
+        // Load dates for config apps
+        for (const config of CONFIG_APP_DEFS) {
+            try {
+                const date = await window.abr.getBackupLastModified?.(config.id);
+                dates[config.id] = date || null;
+            } catch (error) {
+                dates[config.id] = null;
+            }
+        }
+
+        return dates;
+    }, [info?.os]);
 
     // Check config availability
     React.useEffect(() => {
@@ -123,11 +147,6 @@ function App() {
             removeProgressListener?.();
         };
     }, [t, setProgressMessage]);
-
-    const refreshMetadata = React.useCallback(async () => {
-        const md = (await window.abr.getBackupMetadata?.()) || {};
-        setMetadata(md);
-    }, [setMetadata]);
 
     const mergeVSCodeExtensions = (installed: any[], backup: any[]): MergedPackageItem[] => {
         const installedMap = new Map<string, any>();
@@ -452,7 +471,6 @@ function App() {
         }
 
         if (successfulBackups.length > 0) {
-            await refreshMetadata();
             showToast(t('backupSuccess', { items: successfulBackups.join(', ') }), 'success');
         } else {
             showToast(t('noBackupsCompleted'), 'warning');
@@ -474,7 +492,6 @@ function App() {
             } else {
                 await window.abr.runBackupConfig?.(id as any);
             }
-            await refreshMetadata();
             showToast(t('backupConfigSuccess', { name }), 'success');
         } catch (error) {
             console.error(`Failed to backup ${id}:`, error);
@@ -534,7 +551,6 @@ function App() {
             } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
                 await window.abr.runBackupVSCode?.(selectedManager as any, installedIds);
             }
-            await refreshMetadata();
             const managerDef = MANAGER_DEFS.find(m => m.id === selectedManager);
             const vscodeDef = VS_CODE_DEFS.find(e => e.id === selectedManager);
             const displayName = managerDef?.label || vscodeDef?.label || selectedManager;
@@ -680,7 +696,6 @@ function App() {
 
         try {
             await window.abr.runBackupVSCode?.(selectedManager as any);
-            await refreshMetadata();
             showToast(t('settingsBackupSuccess'), 'success');
         } catch (error) {
             console.error('Failed to backup VSCode settings:', error);
@@ -783,6 +798,7 @@ function App() {
                         onRunBackupAll={runBackupAll}
                         onRunBackup={runBackup}
                         onRunRestore={runRestore}
+                        onRefreshBackupDates={loadBackupDates}
                     />
                 );
         }

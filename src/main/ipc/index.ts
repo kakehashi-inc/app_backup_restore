@@ -46,8 +46,8 @@ export function registerIpcHandlers() {
         return backupManager.runBackup(managers);
     });
 
-    ipcMain.handle(IPC_CHANNELS.BACKUP_GET_METADATA, async () => {
-        return backupManager.getBackupMetadata();
+    ipcMain.handle(IPC_CHANNELS.BACKUP_GET_LAST_MODIFIED, async (_e, id: string) => {
+        return backupManager.getBackupLastModified(id);
     });
 
     ipcMain.handle(IPC_CHANNELS.BACKUP_READ_LIST, async (_e, manager: ManagerId) => {

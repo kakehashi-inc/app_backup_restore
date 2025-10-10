@@ -2,14 +2,15 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {
-    BACKUP_METADATA_FILENAME,
+    MANAGER_DEFS,
+    VS_CODE_DEFS,
     CONFIG_APP_DEFS,
     getManagerBackupFileName,
     getVSCodeBackupFileName,
     getVSCodeSettingsPath,
     getConfigAppBackupFileName,
 } from '../../shared/constants';
-import type { BackupMetadata, ManagerId, VSCodeId, VSCodeExtensionItem } from '../../shared/types';
+import type { ManagerId, VSCodeId, VSCodeExtensionItem } from '../../shared/types';
 import { writeJsonFile, readJsonFile, copyFile } from '../utils/fsx';
 import {
     listWinget,
@@ -25,9 +26,8 @@ async function backupManager(
     backupDir: string,
     manager: ManagerId,
     identifiers?: string[]
-): Promise<{ written: string[]; success: boolean }> {
+): Promise<{ written: string[] }> {
     const written: string[] = [];
-    let success = false;
 
     try {
         let items: any[] = [];
@@ -66,33 +66,14 @@ async function backupManager(
         // Write items to file
         writeJsonFile(file, items);
         written.push(file);
-        success = true;
     } catch (error) {
         console.error(`Failed to backup ${manager}:`, error);
     }
 
-    return { written, success };
+    return { written };
 }
 
-// Helper function to update metadata
-function updateBackupMetadata(backupDir: string, managers: ManagerId[]): void {
-    if (managers.length === 0) return;
-
-    const metadataPath = path.join(backupDir, BACKUP_METADATA_FILENAME);
-    const metadata = readJsonFile<BackupMetadata>(metadataPath, {} as BackupMetadata);
-    const now = new Date().toISOString();
-
-    for (const manager of managers) {
-        (metadata as any)[manager] = { last_backup: now };
-    }
-
-    writeJsonFile(metadataPath, metadata);
-}
-
-export async function runBackup(
-    backupDir: string,
-    managers?: ManagerId[]
-): Promise<{ written: string[]; metadataUpdated: boolean }> {
+export async function runBackup(backupDir: string, managers?: ManagerId[]): Promise<{ written: string[] }> {
     const targetManagers: ManagerId[] =
         managers && managers.length ? managers : ['winget', 'msstore', 'scoop', 'chocolatey'];
 
@@ -102,35 +83,71 @@ export async function runBackup(
     for (const manager of targetManagers) {
         const result = await backupManager(backupDir, manager);
         written.push(...result.written);
-        if (result.success) {
+        if (result.written.length > 0) {
             successfulManagers.push(manager);
         }
     }
 
-    // Update metadata only for successful backups
-    updateBackupMetadata(backupDir, successfulManagers);
-
-    return { written, metadataUpdated: successfulManagers.length > 0 };
+    return { written };
 }
 
-export function getBackupMetadata(backupDir: string): BackupMetadata {
-    const metadataPath = path.join(backupDir, BACKUP_METADATA_FILENAME);
-    return readJsonFile<BackupMetadata>(metadataPath, {} as BackupMetadata);
+export function getBackupLastModified(backupDir: string, id: string): string | null {
+    let latestTime = 0;
+    let latestDate: string | null = null;
+
+    // Check package manager backup files (winget, msstore, scoop, chocolatey)
+    const managerDef = MANAGER_DEFS.find(m => m.id === id);
+    if (managerDef) {
+        const managerFile = path.join(backupDir, getManagerBackupFileName(managerDef.id));
+        if (fs.existsSync(managerFile)) {
+            try {
+                const stats = fs.statSync(managerFile);
+                const fileTime = stats.mtime.getTime();
+                if (fileTime > latestTime) {
+                    latestTime = fileTime;
+                    latestDate = stats.mtime.toISOString();
+                }
+            } catch (error) {
+                console.error(`Failed to get stats for ${managerFile}:`, error);
+            }
+        }
+    }
+
+    // Check VSCode and config backup files (both use directory structure)
+    const vscodeDef = VS_CODE_DEFS.find(v => v.id === id);
+    const configDef = CONFIG_APP_DEFS.find(c => c.id === id);
+
+    if (vscodeDef || configDef) {
+        const appDir = path.join(backupDir, id);
+        if (fs.existsSync(appDir) && fs.statSync(appDir).isDirectory()) {
+            try {
+                const files = fs.readdirSync(appDir);
+                for (const file of files) {
+                    const filePath = path.join(appDir, file);
+                    const stats = fs.statSync(filePath);
+                    const fileTime = stats.mtime.getTime();
+                    if (fileTime > latestTime) {
+                        latestTime = fileTime;
+                        latestDate = stats.mtime.toISOString();
+                    }
+                }
+            } catch (error) {
+                console.error(`Failed to get stats for directory ${appDir}:`, error);
+            }
+        }
+    }
+
+    return latestDate;
 }
 
 export async function runBackupSelected(
     backupDir: string,
     manager: ManagerId,
     identifiers: string[]
-): Promise<{ written: string[]; metadataUpdated: boolean }> {
+): Promise<{ written: string[] }> {
     const result = await backupManager(backupDir, manager, identifiers);
 
-    // Update metadata only if backup was successful
-    if (result.success) {
-        updateBackupMetadata(backupDir, [manager]);
-    }
-
-    return { written: result.written, metadataUpdated: result.success };
+    return { written: result.written };
 }
 
 export function readBackupList<T = any>(backupDir: string, manager: ManagerId): T[] {
@@ -171,9 +188,8 @@ export async function runBackupVSCode(
     backupDir: string,
     vscodeId: VSCodeId,
     identifiers?: string[]
-): Promise<{ written: string[]; metadataUpdated: boolean }> {
+): Promise<{ written: string[] }> {
     const written: string[] = [];
-    let success = false;
 
     try {
         // Create app directory
@@ -220,30 +236,16 @@ export async function runBackupVSCode(
                 written.push(destKeybindings);
             }
         }
-
-        success = true;
     } catch (error) {
         console.error(`Failed to backup ${vscodeId}:`, error);
     }
 
-    // Update metadata only if backup was successful
-    if (success) {
-        const metadataPath = path.join(backupDir, BACKUP_METADATA_FILENAME);
-        const metadata = readJsonFile<BackupMetadata>(metadataPath, {} as BackupMetadata);
-        (metadata as any)[vscodeId] = { last_backup: new Date().toISOString() };
-        writeJsonFile(metadataPath, metadata);
-    }
-
-    return { written, metadataUpdated: success };
+    return { written };
 }
 
 // Backup config files
-export async function runBackupConfig(
-    backupDir: string,
-    configAppId: string
-): Promise<{ written: string[]; metadataUpdated: boolean }> {
+export async function runBackupConfig(backupDir: string, configAppId: string): Promise<{ written: string[] }> {
     const written: string[] = [];
-    let success = false;
 
     try {
         const appDef = CONFIG_APP_DEFS.find(def => def.id === configAppId);
@@ -273,21 +275,11 @@ export async function runBackupConfig(
                 written.push(dest);
             }
         }
-
-        success = true;
     } catch (error) {
         console.error(`Failed to backup ${configAppId}:`, error);
     }
 
-    // Update metadata only if backup was successful
-    if (success) {
-        const metadataPath = path.join(backupDir, BACKUP_METADATA_FILENAME);
-        const metadata = readJsonFile<BackupMetadata>(metadataPath, {} as BackupMetadata);
-        (metadata as any)[configAppId] = { last_backup: new Date().toISOString() };
-        writeJsonFile(metadataPath, metadata);
-    }
-
-    return { written, metadataUpdated: success };
+    return { written };
 }
 
 // Check if config app has any existing files

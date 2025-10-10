@@ -38,8 +38,6 @@ export function getVSCodeSettingsPath(vscodeId: VSCodeId, platform: 'win32' | 'd
     return vscode?.settingsPaths[platform] || '';
 }
 
-export const BACKUP_METADATA_FILENAME = 'backup_metadata.json';
-
 export const IPC_CHANNELS = {
     CONFIG_GET: 'config:get',
     CONFIG_SET_BACKUP_DIR: 'config:setBackupDir',
@@ -54,7 +52,7 @@ export const IPC_CHANNELS = {
     BACKUP_RUN_SELECTED: 'backup:runSelected',
     BACKUP_RUN_VSCODE: 'backup:runVSCode',
     BACKUP_RUN_CONFIG: 'backup:runConfig',
-    BACKUP_GET_METADATA: 'backup:getMetadata',
+    BACKUP_GET_LAST_MODIFIED: 'backup:getLastModified',
     BACKUP_READ_LIST: 'backup:readList',
     BACKUP_READ_VSCODE_LIST: 'backup:readVSCodeList',
     RESTORE_RUN: 'restore:run',

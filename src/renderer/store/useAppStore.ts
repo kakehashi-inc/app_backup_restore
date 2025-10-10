@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { AppConfig, ManagerId, VSCodeId, AppInfo, BackupMetadata, MergedPackageItem } from '@shared/types';
+import type { AppConfig, ManagerId, VSCodeId, AppInfo, MergedPackageItem } from '@shared/types';
 
 export type View = 'settings' | 'home' | 'details';
 
@@ -7,7 +7,6 @@ interface AppState {
     // Config and app info
     config: AppConfig;
     info: AppInfo | undefined;
-    metadata: BackupMetadata;
 
     // View state
     view: View;
@@ -51,7 +50,6 @@ interface AppState {
     // Actions
     setConfig: (config: AppConfig) => void;
     setInfo: (info: AppInfo | undefined) => void;
-    setMetadata: (metadata: BackupMetadata) => void;
     setView: (view: View) => void;
     setSelectedManager: (manager: ManagerId | VSCodeId) => void;
     setPackageItems: (items: MergedPackageItem[]) => void;
@@ -81,7 +79,6 @@ const useAppStore = create<AppState>(set => ({
     // Initial state
     config: { backupDirectory: '' },
     info: undefined,
-    metadata: {} as BackupMetadata,
     view: 'home',
     selectedManager: 'winget',
     packageItems: [],
@@ -105,7 +102,6 @@ const useAppStore = create<AppState>(set => ({
     // Actions
     setConfig: config => set({ config }),
     setInfo: info => set({ info }),
-    setMetadata: metadata => set({ metadata }),
     setView: view => set({ view }),
     setSelectedManager: selectedManager => set({ selectedManager }),
     setPackageItems: packageItems => set({ packageItems }),

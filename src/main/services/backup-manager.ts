@@ -4,7 +4,7 @@ import {
     runBackupSelected,
     runBackupVSCode,
     runBackupConfig,
-    getBackupMetadata,
+    getBackupLastModified,
     readBackupList,
     readVSCodeBackupList,
     checkAllConfigAppsAvailability,
@@ -77,10 +77,10 @@ export class BackupManager {
         return runBackupConfig(this.getBackupDirectory(), configAppId);
     }
 
-    // Metadata and list reading
-    async getBackupMetadata() {
+    // List reading
+    async getBackupLastModified(id: string) {
         const backupDir = this.getBackupDirectory();
-        return getBackupMetadata(backupDir);
+        return getBackupLastModified(backupDir, id);
     }
 
     async readBackupList(manager: ManagerId) {
