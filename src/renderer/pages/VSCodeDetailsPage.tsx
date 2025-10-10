@@ -27,7 +27,6 @@ interface VSCodeDetailsPageProps {
     onGenerateScript: () => void;
     onBackupSettings: () => void;
     onRestoreSettings: () => void;
-    onRestoreExecuteExtensionsInWSL: () => void;
     onBack: () => void;
 }
 
@@ -38,7 +37,6 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
     onGenerateScript,
     onBackupSettings,
     onRestoreSettings,
-    onRestoreExecuteExtensionsInWSL,
     onBack,
 }) => {
     const { t } = useTranslation();
@@ -64,6 +62,9 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
     ).length;
     const selectedNotInstalledCount = extensionItems.filter(
         (it: MergedPackageItem) => selectedIds.includes(it.id) && !it.isInstalled
+    ).length;
+    const selectedIdsInWSLInstalledCount = extensionItemsInWSL.filter(
+        (it: MergedPackageItem) => selectedIdsInWSL.includes(it.id) && it.isInstalled
     ).length;
     const selectedIdsInWSLNotInstalledCount = extensionItemsInWSL.filter(
         (it: MergedPackageItem) => selectedIdsInWSL.includes(it.id) && !it.isInstalled
@@ -104,21 +105,21 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                 <Divider sx={{ my: 2 }} />
 
                 {/* Extension List Tabs */}
-                {detectedApps.wsl && extensionItemsInWSL.length > 0 && (
+                {detectedApps.wsl && (
                     <Stack direction='row' spacing={1} sx={{ mb: 2 }}>
                         <Button
                             variant={!showWSLView ? 'contained' : 'outlined'}
                             onClick={() => setShowWSLView(false)}
                             size='small'
                         >
-                            Extensions ({extensionItems.length})
+                            {t('extensions')} ({extensionItems.length})
                         </Button>
                         <Button
                             variant={showWSLView ? 'contained' : 'outlined'}
                             onClick={() => setShowWSLView(true)}
                             size='small'
                         >
-                            Extensions in WSL ({extensionItemsInWSL.length})
+                            {t('extensionsInWSL')} ({extensionItemsInWSL.length})
                         </Button>
                     </Stack>
                 )}
@@ -137,27 +138,42 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                     </Button>
                     <Button
                         variant='contained'
-                        disabled={selectedInstalledCount === 0 || loadingItems || isProcessing}
+                        disabled={
+                            (showWSLView ? selectedIdsInWSLInstalledCount : selectedInstalledCount) === 0 ||
+                            loadingItems ||
+                            isProcessing
+                        }
                         onClick={onBackupSelected}
                     >
                         {t('backup')}
-                        {selectedInstalledCount > 0 && ` (${selectedInstalledCount})`}
+                        {(showWSLView ? selectedIdsInWSLInstalledCount : selectedInstalledCount) > 0 &&
+                            ` (${showWSLView ? selectedIdsInWSLInstalledCount : selectedInstalledCount})`}
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedNotInstalledCount === 0 || loadingItems || isProcessing}
+                        disabled={
+                            (showWSLView ? selectedIdsInWSLNotInstalledCount : selectedNotInstalledCount) === 0 ||
+                            loadingItems ||
+                            isProcessing
+                        }
                         onClick={onRestoreExecute}
                     >
                         {t('restore')}
-                        {selectedNotInstalledCount > 0 && ` (${selectedNotInstalledCount})`}
+                        {(showWSLView ? selectedIdsInWSLNotInstalledCount : selectedNotInstalledCount) > 0 &&
+                            ` (${showWSLView ? selectedIdsInWSLNotInstalledCount : selectedNotInstalledCount})`}
                     </Button>
                     <Button
                         variant='outlined'
-                        disabled={selectedIds.length === 0 || loadingItems || isProcessing}
+                        disabled={
+                            (showWSLView ? selectedIdsInWSL.length : selectedIds.length) === 0 ||
+                            loadingItems ||
+                            isProcessing
+                        }
                         onClick={onGenerateScript}
                     >
                         {t('generateScript')}
-                        {selectedIds.length > 0 && ` (${selectedIds.length})`}
+                        {(showWSLView ? selectedIdsInWSL.length : selectedIds.length) > 0 &&
+                            ` (${showWSLView ? selectedIdsInWSL.length : selectedIds.length})`}
                     </Button>
                 </Stack>
                 <Divider sx={{ my: 2 }} />
@@ -247,14 +263,6 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                             >
                                 {t('selectNotInstalled')}
                             </Button>
-                            <Button
-                                size='small'
-                                variant='contained'
-                                disabled={selectedIdsInWSLNotInstalledCount === 0 || loadingItems || isProcessing}
-                                onClick={onRestoreExecuteExtensionsInWSL}
-                            >
-                                {t('restore')} ({selectedIdsInWSLNotInstalledCount})
-                            </Button>
                         </>
                     )}
                 </Stack>
@@ -266,103 +274,125 @@ export const VSCodeDetailsPage: React.FC<VSCodeDetailsPageProps> = ({
                         <Typography variant='body2'>{progressMessage || t('loading')}</Typography>
                     </Stack>
                 ) : (
-                    <List dense>
-                        {!showWSLView
-                            ? extensionItems.map((it: MergedPackageItem) => {
-                                  const checked = selectedIds.includes(it.id);
-                                  const statusText = it.isInstalled ? t('statusInstalled') : t('statusNotInstalled');
-                                  const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
+                    <>
+                        {!showWSLView ? (
+                            extensionItems.length > 0 ? (
+                                <List dense>
+                                    {extensionItems.map((it: MergedPackageItem) => {
+                                        const checked = selectedIds.includes(it.id);
+                                        const statusText = it.isInstalled
+                                            ? t('statusInstalled')
+                                            : t('statusNotInstalled');
+                                        const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
 
-                                  return (
-                                      <ListItem key={it.id} disableGutters>
-                                          <ListItemIcon>
-                                              <Checkbox
-                                                  edge='start'
-                                                  onChange={() =>
-                                                      setSelectedIds(
-                                                          selectedIds.includes(it.id)
-                                                              ? selectedIds.filter(x => x !== it.id)
-                                                              : [...selectedIds, it.id]
-                                                      )
-                                                  }
-                                                  checked={checked}
-                                                  disabled={isProcessing}
-                                              />
-                                          </ListItemIcon>
-                                          <ListItemText
-                                              primary={
-                                                  <Stack direction='row' spacing={1} alignItems='center'>
-                                                      <Typography>{it.name}</Typography>
-                                                      <Typography
-                                                          variant='caption'
-                                                          sx={{
-                                                              px: 1,
-                                                              py: 0.25,
-                                                              borderRadius: 1,
-                                                              bgcolor: statusColor,
-                                                              color: 'white',
-                                                              fontWeight: 'bold',
-                                                          }}
-                                                      >
-                                                          {statusText}
-                                                      </Typography>
-                                                  </Stack>
-                                              }
-                                              secondary={[it.id, it.version ? `v${it.version}` : '']
-                                                  .filter(Boolean)
-                                                  .join(' / ')}
-                                          />
-                                      </ListItem>
-                                  );
-                              })
-                            : extensionItemsInWSL.map((it: MergedPackageItem) => {
-                                  const checked = selectedIdsInWSL.includes(it.id);
-                                  const statusText = it.isInstalled ? t('statusInstalled') : t('statusNotInstalled');
-                                  const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
+                                        return (
+                                            <ListItem key={it.id} disableGutters>
+                                                <ListItemIcon>
+                                                    <Checkbox
+                                                        edge='start'
+                                                        onChange={() =>
+                                                            setSelectedIds(
+                                                                selectedIds.includes(it.id)
+                                                                    ? selectedIds.filter(x => x !== it.id)
+                                                                    : [...selectedIds, it.id]
+                                                            )
+                                                        }
+                                                        checked={checked}
+                                                        disabled={isProcessing}
+                                                    />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={
+                                                        <Stack direction='row' spacing={1} alignItems='center'>
+                                                            <Typography>{it.name}</Typography>
+                                                            <Typography
+                                                                variant='caption'
+                                                                sx={{
+                                                                    px: 1,
+                                                                    py: 0.25,
+                                                                    borderRadius: 1,
+                                                                    bgcolor: statusColor,
+                                                                    color: 'white',
+                                                                    fontWeight: 'bold',
+                                                                }}
+                                                            >
+                                                                {statusText}
+                                                            </Typography>
+                                                        </Stack>
+                                                    }
+                                                    secondary={[it.id, it.version ? `v${it.version}` : '']
+                                                        .filter(Boolean)
+                                                        .join(' / ')}
+                                                />
+                                            </ListItem>
+                                        );
+                                    })}
+                                </List>
+                            ) : (
+                                <Stack direction='row' alignItems='center' spacing={1} sx={{ py: 4 }}>
+                                    <Typography variant='body2' color='text.secondary'>
+                                        {detectedApps[selectedManager] ? t('noExtensionsFound') : t('appNotInstalled')}
+                                    </Typography>
+                                </Stack>
+                            )
+                        ) : extensionItemsInWSL.length > 0 ? (
+                            <List dense>
+                                {extensionItemsInWSL.map((it: MergedPackageItem) => {
+                                    const checked = selectedIdsInWSL.includes(it.id);
+                                    const statusText = it.isInstalled ? t('statusInstalled') : t('statusNotInstalled');
+                                    const statusColor = it.isInstalled ? 'success.main' : 'warning.main';
 
-                                  return (
-                                      <ListItem key={`wsl-${it.id}`} disableGutters>
-                                          <ListItemIcon>
-                                              <Checkbox
-                                                  edge='start'
-                                                  onChange={() =>
-                                                      setSelectedIdsInWSL(
-                                                          selectedIdsInWSL.includes(it.id)
-                                                              ? selectedIdsInWSL.filter(x => x !== it.id)
-                                                              : [...selectedIdsInWSL, it.id]
-                                                      )
-                                                  }
-                                                  checked={checked}
-                                                  disabled={isProcessing}
-                                              />
-                                          </ListItemIcon>
-                                          <ListItemText
-                                              primary={
-                                                  <Stack direction='row' spacing={1} alignItems='center'>
-                                                      <Typography>{it.name}</Typography>
-                                                      <Typography
-                                                          variant='caption'
-                                                          sx={{
-                                                              px: 1,
-                                                              py: 0.25,
-                                                              borderRadius: 1,
-                                                              bgcolor: statusColor,
-                                                              color: 'white',
-                                                              fontWeight: 'bold',
-                                                          }}
-                                                      >
-                                                          {statusText}
-                                                      </Typography>
-                                                  </Stack>
-                                              }
-                                              secondary={[it.id, it.version ? `v${it.version}` : '']
-                                                  .filter(Boolean)
-                                                  .join(' / ')}
-                                          />
-                                      </ListItem>
-                                  );
-                              })}
-                    </List>
+                                    return (
+                                        <ListItem key={`wsl-${it.id}`} disableGutters>
+                                            <ListItemIcon>
+                                                <Checkbox
+                                                    edge='start'
+                                                    onChange={() =>
+                                                        setSelectedIdsInWSL(
+                                                            selectedIdsInWSL.includes(it.id)
+                                                                ? selectedIdsInWSL.filter(x => x !== it.id)
+                                                                : [...selectedIdsInWSL, it.id]
+                                                        )
+                                                    }
+                                                    checked={checked}
+                                                    disabled={isProcessing}
+                                                />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={
+                                                    <Stack direction='row' spacing={1} alignItems='center'>
+                                                        <Typography>{it.name}</Typography>
+                                                        <Typography
+                                                            variant='caption'
+                                                            sx={{
+                                                                px: 1,
+                                                                py: 0.25,
+                                                                borderRadius: 1,
+                                                                bgcolor: statusColor,
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                            }}
+                                                        >
+                                                            {statusText}
+                                                        </Typography>
+                                                    </Stack>
+                                                }
+                                                secondary={[it.id, it.version ? `v${it.version}` : '']
+                                                    .filter(Boolean)
+                                                    .join(' / ')}
+                                            />
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        ) : (
+                            <Stack direction='row' alignItems='center' spacing={1} sx={{ py: 4 }}>
+                                <Typography variant='body2' color='text.secondary'>
+                                    {detectedApps.wsl ? t('noExtensionsFoundInWSL') : t('wslNotAvailable')}
+                                </Typography>
+                            </Stack>
+                        )}
+                    </>
                 )}
             </Paper>
 

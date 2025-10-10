@@ -263,13 +263,27 @@ export async function listChocolatey(): Promise<ChocolateyItem[]> {
 
 export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
     const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
-    if (!vscodeDef) return [];
+    if (!vscodeDef) {
+        return [];
+    }
 
     const command = vscodeDef.command;
-    if (!command) return [];
+    if (!command) {
+        return [];
+    }
 
     try {
-        const { stdout } = await runCommand(command, ['--list-extensions', '--show-versions']);
+        const { stdout, stderr, code } = await runCommand(command, ['--list-extensions', '--show-versions']);
+
+        if (code !== 0) {
+            console.error(`Command ${command} failed with code ${code}:`, stderr);
+            return [];
+        }
+
+        if (!stdout || stdout.trim() === '') {
+            return [];
+        }
+
         const lines = stdout
             .trim()
             .split('\n')
@@ -299,19 +313,25 @@ export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeEx
 export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
     const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
     if (!vscodeDef) {
-        console.log('No vscodeDef found for vscodeId:', vscodeId);
         return [];
     }
 
     const command = vscodeDef.command;
     if (!command) {
-        console.log('No command found for vscodeId:', vscodeId);
         return [];
     }
 
     try {
-        const { stdout, code } = await runCommandInWSL(command, ['--list-extensions', '--show-versions']);
-        if (code !== 0) return [];
+        const { stdout, stderr, code } = await runCommandInWSL(command, ['--list-extensions', '--show-versions']);
+
+        if (code !== 0) {
+            console.error(`WSL command ${command} failed with code ${code}:`, stderr);
+            return [];
+        }
+
+        if (!stdout || stdout.trim() === '') {
+            return [];
+        }
 
         const lines = stdout
             .trim()

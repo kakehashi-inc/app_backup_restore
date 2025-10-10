@@ -32,6 +32,7 @@ function App() {
         extensionItemsInWSL,
         selectedIds,
         selectedIdsInWSL,
+        showWSLView,
         detectedApps,
         scriptDialogOpen,
         scriptContent,
@@ -311,6 +312,60 @@ function App() {
         }
     };
 
+    const refreshActiveTab = async () => {
+        if (MANAGER_DEFS.some(m => m.id === selectedManager)) {
+            const mgr = selectedManager as ManagerId;
+            setLoadingItems(true);
+
+            try {
+                const [installedData, backupData] = await Promise.all([
+                    window.abr.listPackages(mgr),
+                    window.abr.readBackupList?.(mgr) || Promise.resolve([]),
+                ]);
+
+                const merged = mergePackageLists(installedData, backupData, mgr);
+                setPackageItems(merged);
+            } catch (error) {
+                console.error('Failed to load package lists:', error);
+                setPackageItems([]);
+            } finally {
+                setLoadingItems(false);
+                setProgressMessage('');
+            }
+        } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
+            const vscodeId = selectedManager as VSCodeId;
+            setLoadingItems(true);
+
+            try {
+                if (showWSLView) {
+                    // Refresh WSL extensions only
+                    const wslExtensionsData = (await window.abr.listVSCodeExtensionsWSL?.(vscodeId)) || [];
+                    const wslExtensionsMerged = mergeVSCodeExtensions(wslExtensionsData, []);
+                    setExtensionItemsInWSL(wslExtensionsMerged);
+                } else {
+                    // Refresh regular extensions only
+                    const [installedData, backupData] = await Promise.all([
+                        window.abr.listVSCodeExtensions?.(vscodeId) || Promise.resolve([]),
+                        window.abr.readVSCodeBackupList?.(vscodeId) || Promise.resolve([]),
+                    ]);
+
+                    const merged = mergeVSCodeExtensions(installedData, backupData);
+                    setExtensionItems(merged);
+                }
+            } catch (error) {
+                console.error('Failed to load VSCode extensions:', error);
+                if (showWSLView) {
+                    setExtensionItemsInWSL([]);
+                } else {
+                    setExtensionItems([]);
+                }
+            } finally {
+                setLoadingItems(false);
+                setProgressMessage('');
+            }
+        }
+    };
+
     const confirm = async (message: string, title?: string) => {
         const result = await showYesNo(message, title);
         return result === 'yes';
@@ -449,8 +504,25 @@ function App() {
     };
 
     const runBackupSelected = async () => {
-        const currentItems = MANAGER_DEFS.some(m => m.id === selectedManager) ? packageItems : extensionItems;
-        const installedIds = currentItems.filter(it => selectedIds.includes(it.id) && it.isInstalled).map(it => it.id);
+        let currentItems: MergedPackageItem[];
+        let selectedIdsList: string[];
+
+        if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
+            if (showWSLView) {
+                currentItems = extensionItemsInWSL;
+                selectedIdsList = selectedIdsInWSL;
+            } else {
+                currentItems = extensionItems;
+                selectedIdsList = selectedIds;
+            }
+        } else {
+            currentItems = packageItems;
+            selectedIdsList = selectedIds;
+        }
+
+        const installedIds = currentItems
+            .filter(it => selectedIdsList.includes(it.id) && it.isInstalled)
+            .map(it => it.id);
         if (installedIds.length === 0) return;
 
         setIsProcessing(true);
@@ -480,9 +552,24 @@ function App() {
     };
 
     const runRestoreExecute = async () => {
-        const currentItems = MANAGER_DEFS.some(m => m.id === selectedManager) ? packageItems : extensionItems;
+        let currentItems: MergedPackageItem[];
+        let selectedIdsList: string[];
+
+        if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
+            if (showWSLView) {
+                currentItems = extensionItemsInWSL;
+                selectedIdsList = selectedIdsInWSL;
+            } else {
+                currentItems = extensionItems;
+                selectedIdsList = selectedIds;
+            }
+        } else {
+            currentItems = packageItems;
+            selectedIdsList = selectedIds;
+        }
+
         const notInstalledIds = currentItems
-            .filter(it => selectedIds.includes(it.id) && !it.isInstalled)
+            .filter(it => selectedIdsList.includes(it.id) && !it.isInstalled)
             .map(it => it.id);
         if (notInstalledIds.length === 0) return;
         if (!(await confirm(t('confirmRestore')))) return;
@@ -514,35 +601,24 @@ function App() {
         }
     };
 
-    const runRestoreExecuteExtensionsInWSL = async () => {
-        const notInstalledExtensionsInWSLIds = extensionItemsInWSL
-            .filter(it => selectedIdsInWSL.includes(it.id) && !it.isInstalled)
-            .map(it => it.id);
-        if (notInstalledExtensionsInWSLIds.length === 0) return;
-        if (!(await confirm(t('confirmRestore')))) return;
-
-        setIsProcessing(true);
-        setProcessingMessage(t('restoringExtensionsInWSL'));
-
-        try {
-            await window.abr.runRestoreVSCodeWSL?.({
-                vscodeId: selectedManager as any,
-                identifiers: notInstalledExtensionsInWSLIds,
-                mode: 'execute',
-            });
-            showToast(t('restoreExtensionsInWSLSuccess'), 'success');
-        } catch (error) {
-            console.error('Failed to restore extensions in WSL:', error);
-            showToast(t('restoreExtensionsInWSLFailed'), 'error');
-        } finally {
-            setIsProcessing(false);
-            setProcessingMessage('');
-        }
-    };
-
     const runGenerateScript = async () => {
-        const currentItems = MANAGER_DEFS.some(m => m.id === selectedManager) ? packageItems : extensionItems;
-        const selectedItemIds = currentItems.filter(it => selectedIds.includes(it.id)).map(it => it.id);
+        let currentItems: MergedPackageItem[];
+        let selectedIdsList: string[];
+
+        if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
+            if (showWSLView) {
+                currentItems = extensionItemsInWSL;
+                selectedIdsList = selectedIdsInWSL;
+            } else {
+                currentItems = extensionItems;
+                selectedIdsList = selectedIds;
+            }
+        } else {
+            currentItems = packageItems;
+            selectedIdsList = selectedIds;
+        }
+
+        const selectedItemIds = currentItems.filter(it => selectedIdsList.includes(it.id)).map(it => it.id);
         if (selectedItemIds.length === 0) return;
 
         setIsProcessing(true);
@@ -557,11 +633,20 @@ function App() {
                     mode: 'script',
                 });
             } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
-                result = await window.abr.getScriptContent?.({
-                    vscodeId: selectedManager as any,
-                    identifiers: selectedItemIds,
-                    mode: 'script',
-                } as any);
+                if (showWSLView) {
+                    result = await window.abr.getScriptContent?.({
+                        vscodeId: selectedManager as any,
+                        identifiers: selectedItemIds,
+                        mode: 'script',
+                        wsl: true,
+                    } as any);
+                } else {
+                    result = await window.abr.getScriptContent?.({
+                        vscodeId: selectedManager as any,
+                        identifiers: selectedItemIds,
+                        mode: 'script',
+                    } as any);
+                }
             }
 
             if (result?.content) {
@@ -663,7 +748,7 @@ function App() {
                 if (MANAGER_DEFS.some(m => m.id === selectedManager)) {
                     return (
                         <PackageManagerDetailsPage
-                            onRefresh={() => openDetails(selectedManager)}
+                            onRefresh={refreshActiveTab}
                             onBackupSelected={runBackupSelected}
                             onRestoreExecute={runRestoreExecute}
                             onGenerateScript={runGenerateScript}
@@ -673,13 +758,12 @@ function App() {
                 } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
                     return (
                         <VSCodeDetailsPage
-                            onRefresh={() => openDetails(selectedManager)}
+                            onRefresh={refreshActiveTab}
                             onBackupSelected={runBackupSelected}
                             onRestoreExecute={runRestoreExecute}
                             onGenerateScript={runGenerateScript}
                             onBackupSettings={backupVSCodeSettings}
                             onRestoreSettings={restoreVSCodeSettings}
-                            onRestoreExecuteExtensionsInWSL={runRestoreExecuteExtensionsInWSL}
                             onBack={() => setView('home')}
                         />
                     );
