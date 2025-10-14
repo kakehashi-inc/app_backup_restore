@@ -5,6 +5,8 @@ import { ensureAppDirectories, loadConfig } from './services/config';
 
 let mainWindow: BrowserWindow | null = null;
 
+const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -17,7 +19,6 @@ function createWindow() {
         show: false,
     });
 
-    const isDev = process.env.NODE_ENV !== 'production';
     if (isDev) {
         mainWindow.loadURL('http://localhost:3001');
         // Ensure DevTools are visible in development
