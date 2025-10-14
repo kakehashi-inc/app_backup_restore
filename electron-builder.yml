@@ -6,6 +6,7 @@ directories:
 artifactName: "abr-${version}-${os}-${arch}.${ext}"
 portable:
   artifactName: "abr-${version}-${os}-${arch}-portable.${ext}"
+  buildUniversalInstaller: false
 publish:
   provider: github
   owner: kakehashi-inc
