@@ -113,6 +113,17 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         },
     },
     {
+        id: 'antigravity',
+        label: 'Antigravity',
+        os: ['win32', 'darwin', 'linux'],
+        command: 'antigravity',
+        settingsPaths: {
+            win32: '%APPDATA%\\Antigravity\\User',
+            darwin: '~/Library/Application Support/Antigravity/User',
+            linux: '~/.config/Antigravity/User',
+        },
+    },
+    {
         id: 'voideditor',
         label: 'Void Editor',
         os: ['win32', 'darwin', 'linux'],
