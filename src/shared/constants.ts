@@ -222,9 +222,11 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
     {
         id: 'powershell_rc',
         label: 'PowerShell',
-        os: ['win32'],
+        os: ['win32', 'darwin', 'linux'],
         files: {
-            win32: ['%USERPROFILE%\\Microsoft.PowerShell_profile.ps1'],
+            win32: ['%USERPROFILE%\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1'],
+            darwin: ['~/.config/powershell/Microsoft.PowerShell_profile.ps1'],
+            linux: ['~/.config/powershell/Microsoft.PowerShell_profile.ps1'],
         },
     },
     {
@@ -262,7 +264,10 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
         os: ['win32', 'darwin', 'linux'],
         files: {
             win32: ['%APPDATA%\\FileZilla\\filezilla.xml'],
-            darwin: ['~/.config/filezilla/filezilla.xml'],
+            darwin: [
+                '~/Library/Application Support/FileZilla/filezilla.xml',
+                '~/Library/Containers/org.filezilla-project.filezilla.sandbox/Data/.config/filezilla/filezilla.xml',
+            ],
             linux: ['~/.config/filezilla/filezilla.xml'],
         },
     },
