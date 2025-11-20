@@ -75,12 +75,18 @@ export const HomePage: React.FC<HomePageProps> = ({
 
     // Load backup dates for all items
     React.useEffect(() => {
+        let active = true;
         const loadBackupDates = async () => {
             const dates = await onRefreshBackupDates();
-            setBackupDates(dates);
+            if (active) {
+                setBackupDates(dates);
+            }
         };
 
         loadBackupDates();
+        return () => {
+            active = false;
+        };
     }, [config.backupDirectory, os, onRefreshBackupDates]);
 
     const pmRows = MANAGER_DEFS.filter(m => m.os.includes(os as any)).map(m => ({

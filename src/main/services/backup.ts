@@ -173,53 +173,74 @@ export async function runBackup(backupDir: string, managers?: ManagerId[]): Prom
     return { written };
 }
 
+/**
+ * Get the last modified date of a backup by ID.
+ *
+ * Specification:
+ * - MANAGER_DEFS: Single file in backup root (e.g., homebrew_apps.json)
+ *   Returns the file's last modified date
+ *
+ * - VS_CODE_DEFS & CONFIG_APP_DEFS: Multiple files in a subdirectory (e.g., vscode/)
+ *   Returns the most recent last modified date among all files in the directory
+ *
+ * @param backupDir - Absolute path to the backup directory
+ * @param id - ID of the backup (manager, VSCode, or config app)
+ * @returns ISO 8601 date string of the last modified time, or null if not found
+ */
 export function getBackupLastModified(backupDir: string, id: string): string | null {
-    let latestTime = 0;
-    let latestDate: string | null = null;
-
-    // Check package manager backup files (winget, msstore, scoop, chocolatey)
+    // Check if ID is a package manager (single file backup)
     const managerDef = MANAGER_DEFS.find(m => m.id === id);
     if (managerDef) {
-        const managerFile = path.join(backupDir, getManagerBackupFileName(managerDef.id));
-        if (fs.existsSync(managerFile)) {
-            try {
-                const stats = fs.statSync(managerFile);
-                const fileTime = stats.mtime.getTime();
-                if (fileTime > latestTime) {
-                    latestTime = fileTime;
-                    latestDate = stats.mtime.toISOString();
-                }
-            } catch (error) {
-                console.error(`Failed to get stats for ${managerFile}:`, error);
-            }
+        const backupFile = path.join(backupDir, getManagerBackupFileName(managerDef.id));
+
+        if (!fs.existsSync(backupFile)) {
+            return null;
+        }
+
+        try {
+            const stats = fs.statSync(backupFile);
+            return stats.mtime.toISOString();
+        } catch (error) {
+            console.error(`Failed to get stats for ${backupFile}:`, error);
+            return null;
         }
     }
 
-    // Check VSCode and config backup files (both use directory structure)
-    const vscodeDef = VS_CODE_DEFS.find(v => v.id === id);
-    const configDef = CONFIG_APP_DEFS.find(c => c.id === id);
+    // Check if ID is VSCode or Config App (directory-based backup with multiple files)
+    const isVSCode = VS_CODE_DEFS.some(v => v.id === id);
+    const isConfigApp = CONFIG_APP_DEFS.some(c => c.id === id);
 
-    if (vscodeDef || configDef) {
-        const appDir = path.join(backupDir, id);
-        if (fs.existsSync(appDir) && fs.statSync(appDir).isDirectory()) {
-            try {
-                const files = fs.readdirSync(appDir);
-                for (const file of files) {
-                    const filePath = path.join(appDir, file);
-                    const stats = fs.statSync(filePath);
-                    const fileTime = stats.mtime.getTime();
-                    if (fileTime > latestTime) {
-                        latestTime = fileTime;
-                        latestDate = stats.mtime.toISOString();
-                    }
+    if (isVSCode || isConfigApp) {
+        const backupSubDir = path.join(backupDir, id);
+
+        if (!fs.existsSync(backupSubDir) || !fs.statSync(backupSubDir).isDirectory()) {
+            return null;
+        }
+
+        try {
+            const files = fs.readdirSync(backupSubDir);
+            let mostRecentTime = 0;
+            let mostRecentDate: string | null = null;
+
+            for (const file of files) {
+                const filePath = path.join(backupSubDir, file);
+                const stats = fs.statSync(filePath);
+
+                if (stats.mtime.getTime() > mostRecentTime) {
+                    mostRecentTime = stats.mtime.getTime();
+                    mostRecentDate = stats.mtime.toISOString();
                 }
-            } catch (error) {
-                console.error(`Failed to get stats for directory ${appDir}:`, error);
             }
+
+            return mostRecentDate;
+        } catch (error) {
+            console.error(`Failed to get stats for directory ${backupSubDir}:`, error);
+            return null;
         }
     }
 
-    return latestDate;
+    // ID not found in any definition
+    return null;
 }
 
 export async function runBackupSelected(
