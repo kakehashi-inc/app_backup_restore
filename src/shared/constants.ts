@@ -142,18 +142,9 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             linux: '~/.config/Antigravity/User',
         },
         files: {
-            win32: [
-                '%USERPROFILE%\\.antigravity\\mcp_config.json',
-                '%USERPROFILE%\\.gemini\\GEMINI.md',
-            ],
-            darwin: [
-                '~/.gemini/antigravity/mcp_config.json',
-                '~/.gemini/GEMINI.md'
-            ],
-            linux: [
-                '~/.gemini/antigravity/mcp_config.json',
-                '~/.gemini/GEMINI.md'
-            ],
+            win32: ['%USERPROFILE%\\.antigravity\\mcp_config.json', '%USERPROFILE%\\.gemini\\GEMINI.md'],
+            darwin: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
+            linux: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
         },
     },
     {
@@ -172,6 +163,24 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
 
 // Config app definitions
 export const CONFIG_APP_DEFS: ConfigAppDef[] = [
+    {
+        id: 'bash_rc',
+        label: 'Bash',
+        os: ['darwin', 'linux'],
+        files: {
+            darwin: ['~/.bashrc', '~/.bash_profile'],
+            linux: ['~/.bashrc', '~/.bash_profile'],
+        },
+    },
+    {
+        id: 'zsh_rc',
+        label: 'Zsh',
+        os: ['darwin', 'linux'],
+        files: {
+            darwin: ['~/.zshrc', '~/.zshenv', '~/.zprofile'],
+            linux: ['~/.zshrc', '~/.zshenv', '~/.zprofile'],
+        },
+    },
     {
         id: 'git_rc',
         label: 'Git',

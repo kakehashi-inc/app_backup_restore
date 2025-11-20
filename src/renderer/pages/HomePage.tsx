@@ -95,8 +95,16 @@ export const HomePage: React.FC<HomePageProps> = ({
         last: backupDates[m.id],
     }));
 
-    const vscodeRows = VS_CODE_DEFS.map(e => ({ id: e.id, name: e.label, last: backupDates[e.id] }));
-    const configRows = CONFIG_APP_DEFS.map(c => ({ id: c.id, name: c.label, last: backupDates[c.id] }));
+    const vscodeRows = VS_CODE_DEFS.filter(e => e.os.includes(os as any)).map(e => ({
+        id: e.id,
+        name: e.label,
+        last: backupDates[e.id],
+    }));
+    const configRows = CONFIG_APP_DEFS.filter(c => c.os.includes(os as any)).map(c => ({
+        id: c.id,
+        name: c.label,
+        last: backupDates[c.id],
+    }));
 
     // Split packages/extensions into available and unavailable
     const allPackageRows = [...pmRows, ...vscodeRows];
