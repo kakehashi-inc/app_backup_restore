@@ -300,7 +300,7 @@ export async function runBackupVSCode(
 
         // Backup settings and keybindings
         const platform = os.platform() as 'win32' | 'darwin' | 'linux';
-        const settingsDir = resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform));
+        const settingsDir = path.join(resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform)), 'User');
 
         if (fs.existsSync(settingsDir)) {
             const settingsFile = path.join(settingsDir, 'settings.json');

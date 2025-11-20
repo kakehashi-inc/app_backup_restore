@@ -96,9 +96,9 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         os: ['win32', 'darwin', 'linux'],
         command: 'code',
         settingsPaths: {
-            win32: '%APPDATA%\\Code\\User',
-            darwin: '~/Library/Application Support/Code/User',
-            linux: '~/.config/Code/User',
+            win32: '%APPDATA%\\Code',
+            darwin: '~/Library/Application Support/Code',
+            linux: '~/.config/Code',
         },
     },
     {
@@ -107,9 +107,9 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         os: ['win32', 'darwin', 'linux'],
         command: 'cursor',
         settingsPaths: {
-            win32: '%APPDATA%\\Cursor\\User',
-            darwin: '~/Library/Application Support/Cursor/User',
-            linux: '~/.config/Cursor/User',
+            win32: '%APPDATA%\\Cursor',
+            darwin: '~/Library/Application Support/Cursor',
+            linux: '~/.config/Cursor',
         },
     },
     {
@@ -118,9 +118,9 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         os: ['win32', 'darwin', 'linux'],
         command: 'void',
         settingsPaths: {
-            win32: '%APPDATA%\\Void\\User',
-            darwin: '~/Library/Application Support/Void/User',
-            linux: '~/.config/Void/User',
+            win32: '%APPDATA%\\Void',
+            darwin: '~/Library/Application Support/Void',
+            linux: '~/.config/Void',
         },
     },
 ];

@@ -177,7 +177,7 @@ export function generateScriptContent(req: RestoreRequest | VSCodeRestoreRequest
 
 export async function restoreVSCodeSettings(backupDir: string, vscodeId: VSCodeId): Promise<void> {
     const platform = os.platform() as 'win32' | 'darwin' | 'linux';
-    const settingsDir = resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform));
+    const settingsDir = path.join(resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform)), 'User');
 
     // Restore settings.json
     const settingsBackup = path.join(backupDir, getVSCodeBackupFileName(vscodeId, 'settings'));
