@@ -15,7 +15,7 @@ import { VSCodeDetailsPage } from './pages/VSCodeDetailsPage';
 import { ConfigDetailsPage } from './pages/ConfigDetailsPage';
 import { MANAGER_DEFS, VS_CODE_DEFS, CONFIG_APP_DEFS } from '@shared/constants';
 import { ScriptDialog } from './components/ScriptDialog';
-import type { ManagerId, VSCodeId, MergedPackageItem } from '@shared/types';
+import type { ManagerId, VSCodeId, MergedPackageItem, AppTheme, AppInfo } from '@shared/types';
 
 function App() {
     const { t, i18n } = useTranslation();
@@ -725,6 +725,37 @@ function App() {
         }
     };
 
+    const handleSaveSettings = React.useCallback(
+        async ({ language, theme }: { language: 'ja' | 'en'; theme: 'light' | 'dark' }) => {
+            const valid = (await window.abr.validateBackupDirectory?.()) ?? false;
+            if (!valid) return false;
+
+            const [languageResult, themeResult] = await Promise.all([
+                window.abr.setLanguage(language),
+                window.abr.setTheme(theme),
+            ]);
+
+            const nextLanguage = languageResult?.language ?? language;
+            const nextTheme = (themeResult?.theme ?? theme) as AppTheme;
+
+            i18n.changeLanguage(nextLanguage);
+            const baseInfo: AppInfo =
+                info ??
+                ({
+                    name: 'App Backup Restore',
+                    version: '',
+                    language: nextLanguage,
+                    theme: nextTheme,
+                    os: process.platform as AppInfo['os'],
+                } as AppInfo);
+
+            setInfo({ ...baseInfo, language: nextLanguage, theme: nextTheme });
+
+            return true;
+        },
+        [info, i18n, setInfo]
+    );
+
     const muiTheme = React.useMemo(
         () => createTheme({ palette: { mode: (info?.theme ?? 'light') as 'light' | 'dark' } }),
         [info?.theme]
@@ -739,17 +770,7 @@ function App() {
                             const cfg = await window.abr.chooseBackupDirectory();
                             setConfig(cfg);
                         }}
-                        onValidateBackupDirectory={async () => {
-                            const valid = await window.abr.validateBackupDirectory?.();
-                            if (valid) setView('home');
-                            return valid || false;
-                        }}
-                        onSetLanguage={async lang => {
-                            await window.abr.setLanguage(lang);
-                        }}
-                        onSetTheme={async theme => {
-                            await window.abr.setTheme(theme);
-                        }}
+                        onSaveSettings={handleSaveSettings}
                         onClose={() => {
                             if (!config.backupDirectory) {
                                 window.abr.close();
