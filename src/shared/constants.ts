@@ -1,7 +1,7 @@
 import os from 'os';
 import path from 'path';
 
-import type { ManagerId, VSCodeId, ManagerDef, VSCodeDef, ConfigAppDef } from './types';
+import type { ManagerId, VSCodeId, ManagerDef, BackupFilesDef, VSCodeDef, ConfigAppDef } from './types';
 
 export const APP_DIR_NAME = '.abr';
 
@@ -88,6 +88,12 @@ export const MANAGER_DEFS: readonly ManagerDef[] = [
     { id: 'flatpak', label: 'Flatpak', os: ['linux'] },
 ];
 
+export const VS_CODE_BACKUP_FILES: BackupFilesDef = {
+    win32: ['User/settings.json', 'User/keybindings.json'],
+    darwin: ['User/settings.json', 'User/keybindings.json'],
+    linux: ['User/settings.json', 'User/keybindings.json'],
+};
+
 // VS Code-based IDE definitions (includes VS Code, Cursor, Void Editor)
 export const VS_CODE_DEFS: readonly VSCodeDef[] = [
     {
@@ -100,6 +106,11 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             darwin: '~/Library/Application Support/Code',
             linux: '~/.config/Code',
         },
+        files: {
+            win32: ['%APPDATA%\\Code\\User\\mcp.json'],
+            darwin: ['~/Library/Application Support/Code/User/mcp.json'],
+            linux: ['~/.config/Code/User/mcp.json'],
+        },
     },
     {
         id: 'cursor',
@@ -111,6 +122,11 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             darwin: '~/Library/Application Support/Cursor',
             linux: '~/.config/Cursor',
         },
+        files: {
+            win32: ['%USERPROFILE%\\.cursor\\mcp.json'],
+            darwin: ['~/.cursor/mcp.json'],
+            linux: ['~/.cursor/mcp.json'],
+        },
     },
     {
         id: 'antigravity',
@@ -121,6 +137,11 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             win32: '%APPDATA%\\Antigravity\\User',
             darwin: '~/Library/Application Support/Antigravity/User',
             linux: '~/.config/Antigravity/User',
+        },
+        files: {
+            win32: ['%USERPROFILE%\\.antigravity\\mcp_config.json'],
+            darwin: ['~/.gemini/antigravity/mcp_config.json'],
+            linux: ['~/.gemini/antigravity/mcp_config.json'],
         },
     },
     {

@@ -12,6 +12,7 @@ export type ManagerId =
     | 'snap'
     | 'flatpak';
 
+export type PlatformId = 'win32' | 'darwin' | 'linux';
 export type VSCodeId = 'vscode' | 'cursor' | 'antigravity' | 'voideditor';
 
 export type WingetItem = {
@@ -126,30 +127,35 @@ export type ConfigRestoreRequest = {
 export type ManagerDef = {
     id: ManagerId;
     label: string;
-    os: ('win32' | 'darwin' | 'linux')[];
+    os: PlatformId[];
+};
+
+export type BackupPathDef = {
+    win32?: string;
+    darwin?: string;
+    linux?: string;
+};
+
+export type BackupFilesDef = {
+    win32?: string[];
+    darwin?: string[];
+    linux?: string[];
 };
 
 export type VSCodeDef = {
     id: VSCodeId;
     label: string;
     command: string;
-    os: ('win32' | 'darwin' | 'linux')[];
-    settingsPaths: {
-        win32: string;
-        darwin: string;
-        linux: string;
-    };
+    os: PlatformId[];
+    settingsPaths: BackupPathDef;
+    files?: BackupFilesDef;
 };
 
 export type ConfigAppDef = {
     id: string;
     label: string;
-    os: ('win32' | 'darwin' | 'linux')[];
-    files: {
-        win32?: string[];
-        darwin?: string[];
-        linux?: string[];
-    };
+    os: PlatformId[];
+    files: BackupFilesDef;
 };
 
 export type AppTheme = 'light' | 'dark' | 'system';
@@ -160,7 +166,7 @@ export type AppInfo = {
     version: string;
     language: AppLanguage;
     theme: AppTheme;
-    os: 'win32' | 'darwin' | 'linux';
+    os: PlatformId;
 };
 
 export type ManagerRow = {

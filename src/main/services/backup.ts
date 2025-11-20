@@ -5,9 +5,9 @@ import {
     MANAGER_DEFS,
     VS_CODE_DEFS,
     CONFIG_APP_DEFS,
+    VS_CODE_BACKUP_FILES,
     getManagerBackupFileName,
     getVSCodeBackupFileName,
-    getVSCodeSettingsPath,
     getConfigAppBackupFileName,
 } from '../../shared/constants';
 import type { ManagerId, VSCodeId, VSCodeExtensionItem } from '../../shared/types';
@@ -266,6 +266,7 @@ function resolveEnvPath(pathStr: string): string {
 }
 
 // Backup VSCode extensions and settings
+// Backup VSCode extensions and settings
 export async function runBackupVSCode(
     backupDir: string,
     vscodeId: VSCodeId,
@@ -298,26 +299,62 @@ export async function runBackupVSCode(
             }
         }
 
-        // Backup settings and keybindings
+        // Backup settings and other files
         const platform = os.platform() as 'win32' | 'darwin' | 'linux';
-        const settingsDir = path.join(resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform)), 'User');
+        const vscodeDef = VS_CODE_DEFS.find(v => v.id === vscodeId);
 
-        if (fs.existsSync(settingsDir)) {
-            const settingsFile = path.join(settingsDir, 'settings.json');
-            const keybindingsFile = path.join(settingsDir, 'keybindings.json');
+        if (!vscodeDef) {
+            console.error(`VSCode definition not found for ${vscodeId}`);
+            return { written };
+        }
 
-            if (fs.existsSync(settingsFile)) {
-                const destSettings = path.join(backupDir, getVSCodeBackupFileName(vscodeId, 'settings'));
-                await copyFile(settingsFile, destSettings);
-                written.push(destSettings);
-            }
+        // Resolve settings root path (e.g., .../Code)
+        // Note: settingsPaths points to the root config dir (e.g. .../Code), not User dir
+        const settingsRootPath = resolveEnvPath(vscodeDef.settingsPaths[platform] || '');
+        if (!settingsRootPath) {
+            console.error(`Settings path not defined for ${vscodeId} on ${platform}`);
+            return { written };
+        }
 
-            if (fs.existsSync(keybindingsFile)) {
-                const destKeybindings = path.join(backupDir, getVSCodeBackupFileName(vscodeId, 'keybindings'));
-                await copyFile(keybindingsFile, destKeybindings);
-                written.push(destKeybindings);
+        // 1. Backup standard VSCode files (settings.json, keybindings.json)
+        const standardFiles = VS_CODE_BACKUP_FILES[platform] || [];
+        for (const relativePath of standardFiles) {
+            const sourcePath = path.join(settingsRootPath, relativePath);
+
+            if (fs.existsSync(sourcePath)) {
+                const destPath = path.join(appDir, relativePath);
+                const destDir = path.dirname(destPath);
+
+                if (!fs.existsSync(destDir)) {
+                    fs.mkdirSync(destDir, { recursive: true });
+                }
+
+                await copyFile(sourcePath, destPath);
+                written.push(destPath);
             }
         }
+
+        // 2. Backup app-specific files defined in VSCodeDef
+        const appSpecificFiles = vscodeDef.files?.[platform] || [];
+        for (const filePattern of appSpecificFiles) {
+            const sourcePath = resolveEnvPath(filePattern);
+
+            if (fs.existsSync(sourcePath)) {
+                // Always use basename as requested (flatten structure)
+                const relativePath = path.basename(sourcePath);
+
+                const destPath = path.join(appDir, relativePath);
+                const destDir = path.dirname(destPath);
+
+                if (!fs.existsSync(destDir)) {
+                    fs.mkdirSync(destDir, { recursive: true });
+                }
+
+                await copyFile(sourcePath, destPath);
+                written.push(destPath);
+            }
+        }
+
     } catch (error) {
         console.error(`Failed to backup ${vscodeId}:`, error);
     }

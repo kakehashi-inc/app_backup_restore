@@ -6,8 +6,7 @@ import { copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
     VS_CODE_DEFS,
-    getVSCodeSettingsPath,
-    getVSCodeBackupFileName,
+    VS_CODE_BACKUP_FILES,
     getConfigAppBackupFileName,
 } from '../../shared/constants';
 import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest } from '../../shared/types';
@@ -136,7 +135,6 @@ export async function runRestoreConfig(backupDir: string, configAppId: string): 
         if (fs.existsSync(backupFile)) {
             // Check if target file already exists
             if (fs.existsSync(resolved)) {
-                // TODO: Add confirmation dialog for overwrite
                 console.log(`Overwriting ${resolved}`);
             }
             await copyFile(backupFile, resolved);
@@ -177,19 +175,69 @@ export function generateScriptContent(req: RestoreRequest | VSCodeRestoreRequest
 
 export async function restoreVSCodeSettings(backupDir: string, vscodeId: VSCodeId): Promise<void> {
     const platform = os.platform() as 'win32' | 'darwin' | 'linux';
-    const settingsDir = path.join(resolveEnvPath(getVSCodeSettingsPath(vscodeId, platform)), 'User');
+    const vscodeDef = VS_CODE_DEFS.find(v => v.id === vscodeId);
 
-    // Restore settings.json
-    const settingsBackup = path.join(backupDir, getVSCodeBackupFileName(vscodeId, 'settings'));
-    if (fs.existsSync(settingsBackup)) {
-        const settingsTarget = path.join(settingsDir, 'settings.json');
-        await copyFile(settingsBackup, settingsTarget);
+    if (!vscodeDef) {
+        console.error(`VSCode definition not found for ${vscodeId}`);
+        return;
     }
 
-    // Restore keybindings.json
-    const keybindingsBackup = path.join(backupDir, getVSCodeBackupFileName(vscodeId, 'keybindings'));
-    if (fs.existsSync(keybindingsBackup)) {
-        const keybindingsTarget = path.join(settingsDir, 'keybindings.json');
-        await copyFile(keybindingsBackup, keybindingsTarget);
+    // Resolve settings root path (e.g., .../Code)
+    const settingsRootPath = resolveEnvPath(vscodeDef.settingsPaths[platform] || '');
+    if (!settingsRootPath) {
+        console.error(`Settings path not defined for ${vscodeId} on ${platform}`);
+        return;
+    }
+
+    const appBackupDir = path.join(backupDir, vscodeId);
+    if (!fs.existsSync(appBackupDir)) {
+        console.log(`No backup found for ${vscodeId} at ${appBackupDir}`);
+        return;
+    }
+
+    // 1. Restore standard VSCode files (settings.json, keybindings.json)
+    const standardFiles = VS_CODE_BACKUP_FILES[platform] || [];
+    for (const relativePath of standardFiles) {
+        const backupFile = path.join(appBackupDir, relativePath);
+
+        if (fs.existsSync(backupFile)) {
+            const targetPath = path.join(settingsRootPath, relativePath);
+            const targetDir = path.dirname(targetPath);
+
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            if (fs.existsSync(targetPath)) {
+                console.log(`Overwriting ${targetPath}`);
+            }
+
+            await copyFile(backupFile, targetPath);
+        }
+    }
+
+    // 2. Restore app-specific files defined in VSCodeDef
+    const appSpecificFiles = vscodeDef.files?.[platform] || [];
+    for (const filePattern of appSpecificFiles) {
+        const targetPath = resolveEnvPath(filePattern);
+
+        // Always use basename as requested (flatten structure)
+        const relativePath = path.basename(targetPath);
+
+        const backupFile = path.join(appBackupDir, relativePath);
+
+        if (fs.existsSync(backupFile)) {
+            const targetDir = path.dirname(targetPath);
+
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            if (fs.existsSync(targetPath)) {
+                console.log(`Overwriting ${targetPath}`);
+            }
+
+            await copyFile(backupFile, targetPath);
+        }
     }
 }
