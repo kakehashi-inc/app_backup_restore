@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import { parseStringPromise } from 'xml2js';
 import { BrowserWindow } from 'electron';
+import { resolveVSCodeCommandPath } from '../utils/exec';
 import type {
     ChocolateyItem,
     MsStoreItem,
@@ -269,17 +270,13 @@ export async function listChocolatey(): Promise<ChocolateyItem[]> {
 }
 
 export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
-    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
-    if (!vscodeDef) {
-        return [];
-    }
-
-    const command = vscodeDef.command;
-    if (!command) {
-        return [];
-    }
-
     try {
+        const command = resolveVSCodeCommandPath(vscodeId);
+        if (!command) {
+            console.error(`Unknown VSCode ID: ${vscodeId}`);
+            return [];
+        }
+
         const { stdout, stderr, code } = await runCommand(command, ['--list-extensions', '--show-versions']);
 
         if (code !== 0) {
@@ -318,17 +315,13 @@ export async function listVSCodeExtensions(vscodeId: VSCodeId): Promise<VSCodeEx
 }
 
 export async function listVSCodeExtensionsWSL(vscodeId: VSCodeId): Promise<VSCodeExtensionItem[]> {
-    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
-    if (!vscodeDef) {
-        return [];
-    }
-
-    const command = vscodeDef.command;
-    if (!command) {
-        return [];
-    }
-
     try {
+        const command = resolveVSCodeCommandPath(vscodeId);
+        if (!command) {
+            console.error(`Unknown VSCode ID: ${vscodeId}`);
+            return [];
+        }
+
         const { stdout, stderr, code } = await runCommandInWSL(command, ['--list-extensions', '--show-versions']);
 
         if (code !== 0) {

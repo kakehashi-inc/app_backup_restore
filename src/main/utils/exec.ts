@@ -1,5 +1,7 @@
 import { spawn } from 'child_process';
 import { platform } from 'os';
+import fs from 'fs';
+import path from 'path';
 import { VS_CODE_DEFS } from '../../shared/constants';
 
 export type ExecResult = {
@@ -126,8 +128,35 @@ export async function isPackageManagerAvailable(id: string): Promise<boolean> {
     // Check VS_CODE_DEFS
     const vscodeDef = VS_CODE_DEFS.find(def => def.id === id);
     if (vscodeDef) {
-        return await findCommand(vscodeDef.command);
+        if (platform() === 'darwin' && vscodeDef.darwinAppName) {
+            const commandPath = resolveVSCodeCommandPath(id);
+            return commandPath ? fs.existsSync(commandPath) : false;
+        } else {
+            return await findCommand(vscodeDef.command);
+        }
     }
 
     return false;
+}
+
+/**
+ * Resolve the executable path for a VSCode-based application.
+ * On macOS, returns the path inside the app bundle without existence checks.
+ * On other platforms, returns the command name.
+ */
+export function resolveVSCodeCommandPath(vscodeId: string): string | null {
+    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
+    if (!vscodeDef) {
+        return null;
+    }
+
+    const command = vscodeDef.command;
+
+    // On macOS, always use the executable inside the app bundle
+    if (platform() === 'darwin' && vscodeDef.darwinAppName) {
+        return path.join('/Applications', vscodeDef.darwinAppName, 'Contents/Resources/app/bin', command);
+    }
+
+    // Fallback to command name (may fail if not in PATH)
+    return command;
 }

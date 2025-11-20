@@ -146,6 +146,7 @@ export type VSCodeDef = {
     id: VSCodeId;
     label: string;
     command: string;
+    darwinAppName?: string;
     os: PlatformId[];
     settingsPaths: BackupPathDef;
     files?: BackupFilesDef;

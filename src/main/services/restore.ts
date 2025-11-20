@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { runCommand, runCommandInWSL } from '../utils/exec';
+import { runCommand, runCommandInWSL, resolveVSCodeCommandPath } from '../utils/exec';
 import { copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
@@ -73,12 +73,10 @@ export async function writeInstallScript(req: RestoreRequest, outputPath?: strin
 }
 
 function buildVSCodeInstallCommand(vscodeId: VSCodeId, extensionId: string): { cmd: string; args: string[] } {
-    const vscodeDef = VS_CODE_DEFS.find(def => def.id === vscodeId);
-    if (!vscodeDef) {
-        throw new Error(`Unknown VSCode ID: ${vscodeId}`);
+    const command = resolveVSCodeCommandPath(vscodeId);
+    if (!command) {
+        throw new Error(`Could not resolve command path for VSCode ID: ${vscodeId}`);
     }
-
-    const command = vscodeDef.command;
     return { cmd: command, args: ['--install-extension', extensionId] };
 }
 
@@ -198,7 +196,8 @@ export async function restoreVSCodeSettings(backupDir: string, vscodeId: VSCodeI
     // 1. Restore standard VSCode files (settings.json, keybindings.json)
     const standardFiles = VS_CODE_BACKUP_FILES[platform] || [];
     for (const relativePath of standardFiles) {
-        const backupFile = path.join(appBackupDir, relativePath);
+        // Backup files are stored with basename only
+        const backupFile = path.join(appBackupDir, path.basename(relativePath));
 
         if (fs.existsSync(backupFile)) {
             const targetPath = path.join(settingsRootPath, relativePath);

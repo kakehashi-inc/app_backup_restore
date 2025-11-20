@@ -101,6 +101,7 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         label: 'VS Code',
         os: ['win32', 'darwin', 'linux'],
         command: 'code',
+        darwinAppName: 'Visual Studio Code.app',
         settingsPaths: {
             win32: '%APPDATA%\\Code',
             darwin: '~/Library/Application Support/Code',
@@ -117,6 +118,7 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         label: 'Cursor',
         os: ['win32', 'darwin', 'linux'],
         command: 'cursor',
+        darwinAppName: 'Cursor.app',
         settingsPaths: {
             win32: '%APPDATA%\\Cursor',
             darwin: '~/Library/Application Support/Cursor',
@@ -133,15 +135,25 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         label: 'Antigravity',
         os: ['win32', 'darwin', 'linux'],
         command: 'antigravity',
+        darwinAppName: 'Antigravity.app',
         settingsPaths: {
             win32: '%APPDATA%\\Antigravity\\User',
             darwin: '~/Library/Application Support/Antigravity/User',
             linux: '~/.config/Antigravity/User',
         },
         files: {
-            win32: ['%USERPROFILE%\\.antigravity\\mcp_config.json'],
-            darwin: ['~/.gemini/antigravity/mcp_config.json'],
-            linux: ['~/.gemini/antigravity/mcp_config.json'],
+            win32: [
+                '%USERPROFILE%\\.antigravity\\mcp_config.json',
+                '%USERPROFILE%\\.gemini\\GEMINI.md',
+            ],
+            darwin: [
+                '~/.gemini/antigravity/mcp_config.json',
+                '~/.gemini/GEMINI.md'
+            ],
+            linux: [
+                '~/.gemini/antigravity/mcp_config.json',
+                '~/.gemini/GEMINI.md'
+            ],
         },
     },
     {
@@ -149,6 +161,7 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         label: 'Void Editor',
         os: ['win32', 'darwin', 'linux'],
         command: 'void',
+        darwinAppName: 'Void.app',
         settingsPaths: {
             win32: '%APPDATA%\\Void',
             darwin: '~/Library/Application Support/Void',

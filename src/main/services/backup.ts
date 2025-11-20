@@ -322,7 +322,8 @@ export async function runBackupVSCode(
             const sourcePath = path.join(settingsRootPath, relativePath);
 
             if (fs.existsSync(sourcePath)) {
-                const destPath = path.join(appDir, relativePath);
+                // Use only basename for backup destination
+                const destPath = path.join(appDir, path.basename(relativePath));
                 const destDir = path.dirname(destPath);
 
                 if (!fs.existsSync(destDir)) {
@@ -354,7 +355,6 @@ export async function runBackupVSCode(
                 written.push(destPath);
             }
         }
-
     } catch (error) {
         console.error(`Failed to backup ${vscodeId}:`, error);
     }
