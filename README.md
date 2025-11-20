@@ -4,21 +4,18 @@ Electron-based desktop app to backup and restore your development environment pa
 
 ## Features
 
-- Package managers backup (installed identifiers to JSON):
-  - Windows: winget, Microsoft Store (via winget), Scoop, Chocolatey
-  - macOS/Linux: planned (APT/Homebrew/Pacman etc.)
-- VS Code family and config files: planned according to the requirements spec
-- List view of backup datasets (planned)
-- Per app_id last-backup tracking (`backup_metadata.json`)
-- Restore by app_id with multiple identifiers:
+- Backup installed identifiers from package managers to JSON
+- Back up VS Code family variants, config files, and extension lists (includes WSL-installed extensions on Windows)
+- Run full backups or pick individual managers/editors
+- Browse backup data inside the app
+- Restore per app_id with multiple identifiers:
   - Execute mode: run install commands sequentially
   - Script mode: export a single script with all commands
-- WSL-aware extension listing for editors (planned)
 
 ## Supported OS
 
-- Windows 11 (WSL considered)
-- macOS (planned)
+- Windows 11 (WSL aware)
+- macOS
 - Linux (planned)
 
 ## Requirements
