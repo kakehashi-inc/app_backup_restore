@@ -1,6 +1,6 @@
 {
   "name": "app-backup-restore",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "App Backup Restore GUI",
   "main": "dist/main/index.js",
   "engines": {

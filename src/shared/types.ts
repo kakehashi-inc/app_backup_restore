@@ -12,7 +12,7 @@ export type ManagerId =
     | 'snap'
     | 'flatpak';
 
-export type VSCodeId = 'vscode' | 'cursor' | 'voideditor';
+export type VSCodeId = 'vscode' | 'cursor' | 'antigravity' | 'voideditor';
 
 export type WingetItem = {
     PackageId: string;
