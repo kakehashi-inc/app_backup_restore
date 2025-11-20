@@ -6,7 +6,7 @@ Apple Developer Program契約済みの前提で、`Documents` 配下の手順書
 
 - Apple Developer Program アカウント（個人 / 法人）
 - 開発用 macOS 端末（Xcode Command Line Tools／キーチェーンアクセス）
-- プロジェクト（`/Users/yendo/Sources/electron-projects/app_backup_restore`）に含まれる `entitlements.mac.plist`
+- プロジェクトに含まれる `entitlements.mac.plist`
 - Node.js 22 + Yarn 4（既存環境）
 
 ## 2. CSR（証明書署名要求）の作成
@@ -86,5 +86,3 @@ Apple Developer Program契約済みの前提で、`Documents` 配下の手順書
 - `code object is not signed at all` → 署名未適用。`CSC_*` の設定やキーチェーン登録を再確認。
 - `missing required entitlement` → `entitlements.mac.plist` のキーと `electron-builder.yml` の指定を確認。
 - `Could not find Developer ID Application certificate` → キーチェーンに証明書＋秘密鍵が揃っているか、または `CSC_LINK` が有効か確認。
-
-以上で、`Documents` 配下から参照できる証明書取得〜ビルド手順書が整います。
