@@ -598,13 +598,11 @@ function App() {
                 await window.abr.runRestore({
                     managerId: selectedManager as ManagerId,
                     identifiers: notInstalledIds,
-                    mode: 'execute',
                 });
             } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
                 await window.abr.runRestoreVSCode?.({
                     vscodeId: selectedManager as any,
                     identifiers: notInstalledIds,
-                    mode: 'execute',
                 });
             }
             showToast(t('restoreSelectedSuccess'), 'success');
@@ -646,21 +644,18 @@ function App() {
                 result = await window.abr.getScriptContent?.({
                     managerId: selectedManager as ManagerId,
                     identifiers: selectedItemIds,
-                    mode: 'script',
                 });
             } else if (VS_CODE_DEFS.some(e => e.id === selectedManager)) {
                 if (showWSLView) {
                     result = await window.abr.getScriptContent?.({
                         vscodeId: selectedManager as any,
                         identifiers: selectedItemIds,
-                        mode: 'script',
                         wsl: true,
                     } as any);
                 } else {
                     result = await window.abr.getScriptContent?.({
                         vscodeId: selectedManager as any,
                         identifiers: selectedItemIds,
-                        mode: 'script',
                     } as any);
                 }
             }

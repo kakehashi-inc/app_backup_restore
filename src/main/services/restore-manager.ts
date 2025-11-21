@@ -1,14 +1,10 @@
 import { loadConfig } from './config';
 import {
     runSequentialInstall,
-    runSequentialVSCodeInstall,
-    runSequentialVSCodeInstallWSL,
     runRestoreConfig,
-    writeInstallScript,
-    writeVSCodeInstallScript,
-    generateScript,
     generateScriptContent,
     restoreVSCodeSettings,
+    buildVSCodeInstallCommand,
 } from './restore';
 import type { RestoreRequest, VSCodeId, VSCodeRestoreRequest } from '../../shared/types';
 
@@ -23,30 +19,25 @@ export class RestoreManager {
 
     // Restore operations
     async runRestore(req: RestoreRequest) {
-        if (req.mode === 'execute') {
-            await runSequentialInstall(req);
-            return { mode: 'execute' as const };
-        }
-        const scriptPath = await writeInstallScript(req, req.scriptPath);
-        return { mode: 'script' as const, scriptPath };
+        await runSequentialInstall(req);
     }
 
     async runRestoreVSCode(req: VSCodeRestoreRequest) {
-        if (req.mode === 'execute') {
-            await runSequentialVSCodeInstall(req);
-            return { mode: 'execute' as const };
+        // Execute each command individually using runCommand
+        const { runCommand } = await import('../utils/exec');
+        for (const id of req.identifiers) {
+            const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
+            await runCommand(cmd, args);
         }
-        const scriptPath = await writeVSCodeInstallScript(req, req.scriptPath);
-        return { mode: 'script' as const, scriptPath };
     }
 
     async runRestoreVSCodeWSL(req: VSCodeRestoreRequest) {
-        if (req.mode === 'execute') {
-            await runSequentialVSCodeInstallWSL(req);
-            return { mode: 'execute' as const };
+        // Execute each command individually using runCommandInWSL
+        const { runCommandInWSL } = await import('../utils/exec');
+        for (const id of req.identifiers) {
+            const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
+            await runCommandInWSL(cmd, args);
         }
-        const scriptPath = await writeVSCodeInstallScript(req, req.scriptPath);
-        return { mode: 'script' as const, scriptPath };
     }
 
     async runRestoreConfig(configAppId: string) {
@@ -54,12 +45,7 @@ export class RestoreManager {
         return { success: true };
     }
 
-    // Script generation
-    async generateScript(req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string) {
-        const scriptPath = await generateScript(req, outputPath);
-        return { scriptPath };
-    }
-
+    // Script generation (content only, no file creation)
     getScriptContent(req: RestoreRequest | VSCodeRestoreRequest) {
         const content = generateScriptContent(req);
         return { content };

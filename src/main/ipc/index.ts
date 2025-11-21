@@ -86,13 +86,6 @@ export function registerIpcHandlers() {
         return restoreManager.runRestoreConfig(configAppId);
     });
 
-    ipcMain.handle(
-        IPC_CHANNELS.RESTORE_GENERATE_SCRIPT,
-        async (_e, req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string) => {
-            return restoreManager.generateScript(req, outputPath);
-        }
-    );
-
     ipcMain.handle(IPC_CHANNELS.RESTORE_GET_SCRIPT_CONTENT, async (_e, req: RestoreRequest | VSCodeRestoreRequest) => {
         return restoreManager.getScriptContent(req);
     });

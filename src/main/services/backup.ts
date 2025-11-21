@@ -11,7 +11,7 @@ import {
     getConfigAppBackupFileName,
 } from '../../shared/constants';
 import type { ManagerId, VSCodeId, VSCodeExtensionItem } from '../../shared/types';
-import { writeJsonFile, readJsonFile, copyFile } from '../utils/fsx';
+import { writeJsonFile, readJsonFile, copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     listWinget,
     listMsStore,
@@ -263,30 +263,6 @@ export function readVSCodeBackupList(backupDir: string, vscodeId: VSCodeId): VSC
     return readJsonFile<VSCodeExtensionItem[]>(file, []);
 }
 
-// Helper function to resolve environment paths
-function resolveEnvPath(pathStr: string): string {
-    const platform = os.platform();
-    let resolved = pathStr;
-
-    if (platform === 'win32') {
-        resolved = resolved.replace(/%([^%]+)%/g, (_, varName) => {
-            return process.env[varName] || `%${varName}%`;
-        });
-    } else {
-        resolved = resolved.replace(/\$([A-Z_][A-Z0-9_]*)/gi, (_, varName) => {
-            return process.env[varName] || `$${varName}`;
-        });
-        if (resolved.startsWith('~/')) {
-            resolved = path.join(os.homedir(), resolved.slice(2));
-        } else if (resolved === '~') {
-            resolved = os.homedir();
-        }
-    }
-
-    return path.normalize(resolved);
-}
-
-// Backup VSCode extensions and settings
 // Backup VSCode extensions and settings
 export async function runBackupVSCode(
     backupDir: string,

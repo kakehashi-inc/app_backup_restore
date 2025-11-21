@@ -32,11 +32,10 @@ export type IpcApi = {
     runBackupVSCode?(vscodeId: VSCodeId, identifiers?: string[]): Promise<{ written: string[] }>;
     runBackupConfig?(configAppId: string): Promise<{ written: string[] }>;
     getBackupLastModified?(id: string): Promise<string | null>;
-    runRestore(req: RestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
-    runRestoreVSCode?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
-    runRestoreVSCodeWSL?(req: VSCodeRestoreRequest): Promise<{ mode: 'execute' | 'script'; scriptPath?: string }>;
+    runRestore(req: RestoreRequest): Promise<void>;
+    runRestoreVSCode?(req: VSCodeRestoreRequest): Promise<void>;
+    runRestoreVSCodeWSL?(req: VSCodeRestoreRequest): Promise<void>;
     runRestoreConfig?(configAppId: string): Promise<{ success: boolean }>;
-    generateScript?(req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string): Promise<{ scriptPath: string }>;
     getScriptContent?(req: RestoreRequest | VSCodeRestoreRequest): Promise<{ content: string }>;
     restoreVSCodeSettings?(vscodeId: VSCodeId): Promise<{ success: boolean }>;
     onTaskProgress(handler: (message: string | { key: string; params: Record<string, any> }) => void): () => void; // returns unsubscribe

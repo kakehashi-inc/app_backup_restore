@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { runCommand, runCommandInWSL, resolveVSCodeCommandPath } from '../utils/exec';
+import { runCommand, resolveVSCodeCommandPath } from '../utils/exec';
 import { copyFile, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
@@ -54,62 +54,12 @@ export async function runSequentialInstall(req: RestoreRequest): Promise<void> {
     }
 }
 
-export async function writeInstallScript(req: RestoreRequest, outputPath?: string): Promise<string> {
-    const isWin = os.platform() === 'win32';
-    const ext = isWin ? '.ps1' : '.sh';
-    const file =
-        outputPath && outputPath.trim() ? outputPath : path.join(os.tmpdir(), `abr_install_${Date.now()}${ext}`);
-    const lines: string[] = [];
-    if (!isWin) lines.push('#!/usr/bin/env bash');
-    for (const id of req.identifiers) {
-        const version = req.versions?.[id];
-        const { cmd, args } = buildInstallCommand(req.managerId, id, version);
-        const line = [cmd, ...args].join(' ');
-        lines.push(line);
-    }
-    await fs.promises.writeFile(file, lines.join(os.EOL), 'utf-8');
-    if (!isWin) await fs.promises.chmod(file, 0o755);
-    return file;
-}
-
-function buildVSCodeInstallCommand(vscodeId: VSCodeId, extensionId: string): { cmd: string; args: string[] } {
+export function buildVSCodeInstallCommand(vscodeId: VSCodeId, extensionId: string): { cmd: string; args: string[] } {
     const command = resolveVSCodeCommandPath(vscodeId);
     if (!command) {
         throw new Error(`Could not resolve command path for VSCode ID: ${vscodeId}`);
     }
     return { cmd: command, args: ['--install-extension', extensionId] };
-}
-
-export async function runSequentialVSCodeInstall(req: VSCodeRestoreRequest): Promise<void> {
-    for (const id of req.identifiers) {
-        const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
-        await runCommand(cmd, args);
-    }
-}
-
-export async function runSequentialVSCodeInstallWSL(req: VSCodeRestoreRequest): Promise<void> {
-    for (const id of req.identifiers) {
-        const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
-        // Run through WSL
-        await runCommandInWSL(cmd, args);
-    }
-}
-
-export async function writeVSCodeInstallScript(req: VSCodeRestoreRequest, outputPath?: string): Promise<string> {
-    const isWin = os.platform() === 'win32';
-    const ext = isWin ? '.ps1' : '.sh';
-    const file =
-        outputPath && outputPath.trim() ? outputPath : path.join(os.tmpdir(), `abr_vscode_install_${Date.now()}${ext}`);
-    const lines: string[] = [];
-    if (!isWin) lines.push('#!/usr/bin/env bash');
-    for (const id of req.identifiers) {
-        const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
-        const line = [cmd, ...args].join(' ');
-        lines.push(line);
-    }
-    await fs.promises.writeFile(file, lines.join(os.EOL), 'utf-8');
-    if (!isWin) await fs.promises.chmod(file, 0o755);
-    return file;
 }
 
 export async function runRestoreConfig(backupDir: string, configAppId: string): Promise<void> {
@@ -140,14 +90,6 @@ export async function runRestoreConfig(backupDir: string, configAppId: string): 
     }
 }
 
-export async function generateScript(req: RestoreRequest | VSCodeRestoreRequest, outputPath?: string): Promise<string> {
-    if ('managerId' in req) {
-        return writeInstallScript(req, outputPath);
-    } else {
-        return writeVSCodeInstallScript(req, outputPath);
-    }
-}
-
 export function generateScriptContent(req: RestoreRequest | VSCodeRestoreRequest): string {
     const lines: string[] = [];
 
@@ -156,14 +98,22 @@ export function generateScriptContent(req: RestoreRequest | VSCodeRestoreRequest
         for (const id of req.identifiers) {
             const version = req.versions?.[id];
             const { cmd, args } = buildInstallCommand(req.managerId, id, version);
-            const line = [cmd, ...args].join(' ');
+            let cmdStr = cmd;
+            if (cmdStr.indexOf(' ') !== -1) {
+                cmdStr = `'${cmdStr}'`;
+            }
+            const line = [cmdStr, ...args].join(' ');
             lines.push(line);
         }
     } else {
         // VSCode extension script
         for (const id of req.identifiers) {
             const { cmd, args } = buildVSCodeInstallCommand(req.vscodeId, id);
-            const line = [cmd, ...args].join(' ');
+            let cmdStr = cmd;
+            if (cmdStr.indexOf(' ') !== -1) {
+                cmdStr = `'${cmdStr}'`;
+            }
+            const line = [cmdStr, ...args].join(' ');
             lines.push(line);
         }
     }

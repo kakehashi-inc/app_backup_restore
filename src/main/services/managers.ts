@@ -17,7 +17,6 @@ import type {
     FlatpakItem,
     VSCodeExtensionItem,
     VSCodeId,
-    MergedPackageItem,
 } from '../../shared/types';
 import { MANAGER_DEFS, VS_CODE_DEFS } from '../../shared/constants';
 import { isPackageManagerAvailable, runCommand, runCommandInWSL } from '../utils/exec';
@@ -230,7 +229,7 @@ export async function listMsStore(): Promise<MsStoreItem[]> {
 }
 
 export async function listScoop(): Promise<ScoopItem[]> {
-    const { stdout, code } = await runCommand('powershell', ['-Command', 'scoop export'], {});
+    const { stdout, code } = await runCommand('scoop', ['export'], {});
     if (code !== 0 || !stdout) return [];
     try {
         const json = JSON.parse(stdout);
@@ -578,65 +577,4 @@ export async function listFlatpak(): Promise<FlatpakItem[]> {
     } catch {
         return [];
     }
-}
-
-// Helper functions to convert manager items to MergedPackageItem
-export function convertHomebrewToMerged(items: HomebrewItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Name,
-        name: item.Name,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
-}
-
-export function convertAptToMerged(items: AptItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Package,
-        name: item.Package,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
-}
-
-export function convertYumToMerged(items: YumItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Name,
-        name: item.Name,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
-}
-
-export function convertPacmanToMerged(items: PacmanItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Name,
-        name: item.Name,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
-}
-
-export function convertSnapToMerged(items: SnapItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Name,
-        name: item.Name,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
-}
-
-export function convertFlatpakToMerged(items: FlatpakItem[]): MergedPackageItem[] {
-    return items.map(item => ({
-        id: item.Name,
-        name: item.Name,
-        version: item.Version,
-        isInstalled: true,
-        source: 'installed' as const,
-    }));
 }

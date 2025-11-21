@@ -2,6 +2,7 @@ import path from 'path';
 import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import { registerIpcHandlers } from './ipc/index';
 import { ensureAppDirectories, loadConfig } from './services/config';
+import { setupConsoleBridge, setMainWindow } from './utils/console-bridge';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -18,6 +19,9 @@ function createWindow() {
         },
         show: false,
     });
+
+    // Set main window for console bridge
+    setMainWindow(mainWindow);
 
     if (isDev) {
         mainWindow.loadURL('http://localhost:3001');
@@ -42,10 +46,16 @@ function createWindow() {
     }
 
     mainWindow.on('ready-to-show', () => mainWindow?.show());
-    mainWindow.on('closed', () => (mainWindow = null));
+    mainWindow.on('closed', () => {
+        setMainWindow(null);
+        mainWindow = null;
+    });
 }
 
 app.whenReady().then(async () => {
+    // Setup console bridge to send main process logs to DevTools
+    setupConsoleBridge();
+
     ensureAppDirectories();
     loadConfig(); // ensure exists
     registerIpcHandlers();

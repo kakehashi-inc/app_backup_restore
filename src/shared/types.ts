@@ -103,21 +103,15 @@ export type AppConfig = {
 
 export type DetectResult = Record<ManagerId, boolean> & { wslDetected?: boolean };
 
-export type RestoreMode = 'execute' | 'script';
-
 export type RestoreRequest = {
     managerId: ManagerId;
     identifiers: string[]; // list of PackageId or Name depending on manager
     versions?: Record<string, string | undefined>; // optional versions keyed by identifier
-    mode: RestoreMode;
-    scriptPath?: string; // when mode === 'script', optional path to write script to
 };
 
 export type VSCodeRestoreRequest = {
     vscodeId: VSCodeId;
     identifiers: string[]; // list of extension IDs
-    mode: RestoreMode;
-    scriptPath?: string;
 };
 
 export type ConfigRestoreRequest = {

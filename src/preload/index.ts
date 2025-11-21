@@ -24,7 +24,6 @@ const IPC_CHANNELS = {
     RESTORE_RUN_VSCODE: 'restore:runVSCode',
     RESTORE_RUN_VSCODE_WSL: 'restore:runVSCodeWSL',
     RESTORE_RUN_CONFIG: 'restore:runConfig',
-    RESTORE_GENERATE_SCRIPT: 'restore:generateScript',
     RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
     RESTORE_VSCODE_SETTINGS: 'restore:vscodeSettings',
     TASK_PROGRESS: 'task:progress',
@@ -36,6 +35,7 @@ const IPC_CHANNELS = {
     WINDOW_CLOSE: 'window:close',
     WINDOW_IS_MAXIMIZED: 'window:isMaximized',
     DIALOG_CONFIRM: 'dialog:confirm',
+    MAIN_CONSOLE: 'main:console',
 } as const;
 
 const api: IpcApi = {
@@ -109,10 +109,6 @@ const api: IpcApi = {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_CONFIG, configAppId);
     },
-    async generateScript(req, outputPath) {
-        // @ts-ignore widen api
-        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_GENERATE_SCRIPT, req, outputPath);
-    },
     async getScriptContent(req) {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_GET_SCRIPT_CONTENT, req);
@@ -150,3 +146,55 @@ const api: IpcApi = {
 };
 
 contextBridge.exposeInMainWorld('abr', api);
+
+// Listen for main process console messages and forward to DevTools
+ipcRenderer.on(
+    IPC_CHANNELS.MAIN_CONSOLE,
+    (
+        _event,
+        data: {
+            level: string;
+            args: Array<{ type: string; value?: string; message?: string; stack?: string; name?: string }>;
+        }
+    ) => {
+        const { level, args } = data;
+        // Deserialize arguments for DevTools output
+        const deserializedArgs = args.map(arg => {
+            if (arg.type === 'error') {
+                const error = new Error(arg.message || 'Unknown error');
+                if (arg.stack) error.stack = arg.stack;
+                if (arg.name) error.name = arg.name;
+                return error;
+            } else if (arg.type === 'object') {
+                try {
+                    return JSON.parse(arg.value || '{}');
+                } catch {
+                    return arg.value;
+                }
+            } else {
+                return arg.value;
+            }
+        });
+
+        // Forward to renderer console (which appears in DevTools)
+        switch (level) {
+            case 'log':
+                console.log('[Main]', ...deserializedArgs);
+                break;
+            case 'error':
+                console.error('[Main]', ...deserializedArgs);
+                break;
+            case 'warn':
+                console.warn('[Main]', ...deserializedArgs);
+                break;
+            case 'info':
+                console.info('[Main]', ...deserializedArgs);
+                break;
+            case 'debug':
+                console.debug('[Main]', ...deserializedArgs);
+                break;
+            default:
+                console.log('[Main]', ...deserializedArgs);
+        }
+    }
+);

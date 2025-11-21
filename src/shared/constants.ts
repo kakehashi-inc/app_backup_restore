@@ -33,11 +33,6 @@ export function getConfigAppBackupFileName(configAppId: string, fileName: string
     return `${configAppId}/${fileName}`;
 }
 
-export function getVSCodeSettingsPath(vscodeId: VSCodeId, platform: 'win32' | 'darwin' | 'linux'): string {
-    const vscode = VS_CODE_DEFS.find(v => v.id === vscodeId);
-    return vscode?.settingsPaths[platform] || '';
-}
-
 export const IPC_CHANNELS = {
     CONFIG_GET: 'config:get',
     CONFIG_SET_BACKUP_DIR: 'config:setBackupDir',
@@ -59,7 +54,6 @@ export const IPC_CHANNELS = {
     RESTORE_RUN_VSCODE: 'restore:runVSCode',
     RESTORE_RUN_VSCODE_WSL: 'restore:runVSCodeWSL',
     RESTORE_RUN_CONFIG: 'restore:runConfig',
-    RESTORE_GENERATE_SCRIPT: 'restore:generateScript',
     RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
     RESTORE_VSCODE_SETTINGS: 'restore:vscodeSettings',
     TASK_PROGRESS: 'task:progress',
@@ -70,6 +64,7 @@ export const IPC_CHANNELS = {
     WINDOW_MAXIMIZE_OR_RESTORE: 'window:maximizeOrRestore',
     WINDOW_CLOSE: 'window:close',
     WINDOW_IS_MAXIMIZED: 'window:isMaximized',
+    MAIN_CONSOLE: 'main:console',
 } as const;
 
 // Manager definitions for UI

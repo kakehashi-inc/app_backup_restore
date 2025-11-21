@@ -21,7 +21,7 @@ export function runCommand(
 
         if (isWin) {
             // On Windows, always use PowerShell for consistent execution
-            const psCommand = `& '${cmd}' ${args.map(arg => `'${arg}'`).join(' ')}`;
+            const psCommand = `& '${cmd}' ${args.map(arg => `'${arg}'`).join(' ')}`.trim();
             const child = spawn('powershell', ['-Command', psCommand], {
                 cwd: opts.cwd,
                 env: { ...process.env, ...opts.env },
@@ -44,8 +44,8 @@ export function runCommand(
                 const escaped = arg.replace(/'/g, "'\\''");
                 return `'${escaped}'`;
             });
-            const command = `'${cmd}' ${escapedArgs.join(' ')}`;
-            const child = spawn('/bin/zsh', ['-c', command], {
+            const zshCommand = `'${cmd}' ${escapedArgs.join(' ')}`.trim();
+            const child = spawn('/bin/zsh', ['-c', zshCommand], {
                 cwd: opts.cwd,
                 env: { ...process.env, ...opts.env },
                 shell: false,
@@ -104,19 +104,10 @@ export async function runCommandInWSL(
 
 export async function findCommand(command: string): Promise<boolean> {
     const isWin = platform() === 'win32';
-    const isMac = platform() === 'darwin';
     if (isWin) {
         // On Windows, use PowerShell Get-Command for consistent detection
-        const psRes = await runCommand('powershell', [
-            '-Command',
-            `Get-Command ${command} -ErrorAction SilentlyContinue`,
-        ]);
+        const psRes = await runCommand('Get-Command', [command, '-ErrorAction', 'SilentlyContinue']);
         return psRes.code === 0 && psRes.stdout.trim() !== '';
-    } else if (isMac) {
-        // On macOS, use zsh to execute which command
-        // This ensures shell environment variables (PATH from .zshrc, etc.) are maintained
-        const res = await runCommand('/bin/zsh', ['-c', `which ${command}`]);
-        return res.code === 0 && res.stdout.trim() !== '';
     } else {
         // On Unix-like systems, use which
         const res = await runCommand('which', [command]);
