@@ -17,6 +17,7 @@ export function runCommand(
 ): Promise<ExecResult> {
     return new Promise(resolve => {
         const isWin = platform() === 'win32';
+        const isMac = platform() === 'darwin';
 
         if (isWin) {
             // On Windows, always use PowerShell for consistent execution
@@ -26,6 +27,28 @@ export function runCommand(
                 env: { ...process.env, ...opts.env },
                 shell: false,
                 windowsHide: true,
+            });
+
+            let stdout = '';
+            let stderr = '';
+            child.stdout?.on('data', d => (stdout += d.toString()));
+            child.stderr?.on('data', d => (stderr += d.toString()));
+            child.on('close', code => resolve({ stdout, stderr, code }));
+            child.on('error', err => resolve({ stdout, stderr: String(err), code: 1 }));
+        } else if (isMac) {
+            // On macOS, use zsh to execute commands
+            // This ensures shell environment variables (PATH from .zshrc, etc.) are maintained
+            // Escape arguments properly for shell execution
+            const escapedArgs = args.map(arg => {
+                // Escape single quotes by replacing ' with '\''
+                const escaped = arg.replace(/'/g, "'\\''");
+                return `'${escaped}'`;
+            });
+            const command = `'${cmd}' ${escapedArgs.join(' ')}`;
+            const child = spawn('/bin/zsh', ['-c', command], {
+                cwd: opts.cwd,
+                env: { ...process.env, ...opts.env },
+                shell: false,
             });
 
             let stdout = '';
