@@ -29,6 +29,9 @@
       <string>com.apple.coreservices.launchservicesd</string>
     </array>
 
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
     <!-- Allow reading from user home directory and Library folders -->
     <!-- Required for accessing:
          - ~/.abr (app config)
