@@ -106,7 +106,10 @@ export async function findCommand(command: string): Promise<boolean> {
     const isWin = platform() === 'win32';
     if (isWin) {
         // On Windows, use PowerShell Get-Command for consistent detection
-        const psRes = await runCommand('Get-Command', [command, '-ErrorAction', 'SilentlyContinue']);
+        const psRes = await runCommand('powershell', [
+            '-Command',
+            `Get-Command ${command} -ErrorAction SilentlyContinue`,
+        ]);
         return psRes.code === 0 && psRes.stdout.trim() !== '';
     } else {
         // On Unix-like systems, use which
