@@ -3,6 +3,7 @@ import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import { registerIpcHandlers } from './ipc/index';
 import { ensureAppDirectories, loadConfig } from './services/config';
 import { setupConsoleBridge, setMainWindow } from './utils/console-bridge';
+import { fixPathOnMacOS } from './utils/exec';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -53,6 +54,11 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+    // Fix PATH on macOS
+    if (process.platform === 'darwin') {
+        await fixPathOnMacOS();
+    }
+
     // Setup console bridge to send main process logs to DevTools
     setupConsoleBridge();
 

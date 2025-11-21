@@ -180,3 +180,55 @@ export function resolveVSCodeCommandPath(vscodeId: string): string | null {
     // Fallback to command name (may fail if not in PATH)
     return command;
 }
+
+/**
+ * macOSの場合、GUIアプリとして起動すると.zshrcなどで設定した環境変数（PATHなど）が
+ * 引き継がれないため、明示的にzsh -l -c envを実行して環境変数を取得・適用する。
+ */
+export function fixPathOnMacOS(): Promise<void> {
+    return new Promise(resolve => {
+        if (platform() !== 'darwin') {
+            resolve();
+            return;
+        }
+
+        // 開発モードの場合はすでにターミナルから起動していることが多いのでスキップしても良いが、
+        // 念のため実行しても問題はない。ただし、既存の環境変数を優先するかどうかは検討が必要。
+        // ここでは、PATHなどが不足している前提で、取得した値を上書き（またはマージ）する。
+
+        const child = spawn('/bin/zsh', ['-l', '-c', 'env'], {
+            detached: false,
+            stdio: ['ignore', 'pipe', 'ignore'],
+            env: process.env, // 既存のenvも渡しておく
+        });
+
+        let output = '';
+        child.stdout.on('data', d => {
+            output += d.toString();
+        });
+
+        child.on('close', code => {
+            if (code === 0) {
+                const lines = output.split('\n');
+                for (const line of lines) {
+                    const idx = line.indexOf('=');
+                    if (idx > 0) {
+                        const key = line.substring(0, idx);
+                        const value = line.substring(idx + 1);
+                        // 既存の値を上書きする
+                        process.env[key] = value;
+                    }
+                }
+                console.log('[Main] Environment variables loaded from zsh -l');
+            } else {
+                console.error('[Main] Failed to load environment variables from zsh -l');
+            }
+            resolve();
+        });
+
+        child.on('error', err => {
+            console.error('[Main] Error spawning zsh to load env:', err);
+            resolve();
+        });
+    });
+}
