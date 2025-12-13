@@ -137,7 +137,7 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             linux: '~/.config/Antigravity/User',
         },
         files: {
-            win32: ['%USERPROFILE%\\.antigravity\\mcp_config.json', '%USERPROFILE%\\.gemini\\GEMINI.md'],
+            win32: ['%USERPROFILE%\\.gemini\\antigravity\\mcp_config.json', '%USERPROFILE%\\.gemini\\GEMINI.md'],
             darwin: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
             linux: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
         },
