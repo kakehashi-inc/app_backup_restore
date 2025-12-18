@@ -12,57 +12,67 @@ Windows / macOS / Linux を念頭に設計されています。
 - バックアップデータの一覧表示
 - アプリ単位のリストア
 
-## 対応 OS
+## 対応OS
 
 - Windows 11（WSL 考慮）
-- macOS
-- Linux（予定）
+- macOS 10.15+
+- Linux (Debian系/RHEL系)
 
-## 開発環境
+注記: 本プロジェクトは Windows ではコード署名を行っていません。SmartScreen が警告を表示する場合は「詳細情報」→「実行」を選択してください。
 
-### 必要環境
+## 3. 開発者向けリファレンス
 
-- Node.js 22+
+### 開発ルール
+
+- 開発者の参照するドキュメントは`README.md`を除き`Documents`に配置すること。
+- 対応後は必ずリンターで確認を行い適切な修正を行うこと。故意にリンターエラーを許容する際は、その旨をコメントで明記すること。 **ビルドはリリース時に行うものでデバックには不要なのでリンターまでで十分**
+- モデルの実装時は、テーブル単位でファイルを配置すること。
+- 部品化するものは`modules`にファイルを作成して実装すること。
+- 一時的なスクリプトなど（例:調査用スクリプト）は`scripts`ディレクトリに配置すること。
+- モデルを作成および変更を加えた場合は、`Documents/テーブル定義.md`を更新すること。テーブル定義はテーブルごとに表で表現し、カラム名や型およびリレーションを表内で表現すること。
+- システムの動作などに変更があった場合は、`Documents/システム仕様.md`を更新すること。
+
+### 必要要件
+
+- Node.js 22.x以上
 - yarn 4
 - Git
 
 ### インストール
 
 ```bash
-# リポジトリをクローン
+# リポジトリのクローン
 git clone <repository-url>
-cd app_backup_restore
+cd <repository-name>
 
-# 依存関係をインストール
+# 依存関係のインストール
 yarn install
 
-# 開発起動（TS main watch / Vite / Electron）
+# 開発起動
 yarn dev
 ```
 
-開発時の DevTools:
+開発時のDevTools:
 
-- DevTools はデタッチモードで自動的に開きます
-- F12 または Ctrl+Shift+I（macOS は Cmd+Option+I）で切り替え
+- DevTools はデタッチ表示で自動的に開きます
+- F12 または Ctrl+Shift+I（macOSは Cmd+Option+I）でトグル可能
 
-### ビルド / 配布
+### ビルド/配布
 
 - 全プラットフォーム: `yarn dist`
 - Windows: `yarn dist:win`
 - macOS: `yarn dist:mac`
 - Linux: `yarn dist:linux`
 
-開発時は BrowserRouter（`http://localhost:3001`）を使用し、本番では HashRouter で `dist/renderer/index.html` を読み込みます。
+開発時は BrowserRouter で `<http://localhost:3001>` を、配布ビルドでは HashRouter で `dist/renderer/index.html` を読み込みます。
 
-#### Windows 事前準備: 開発者モード
+### Windows 事前準備: 開発者モード
 
-署名されていないローカルリリースを Windows でビルド／実行する場合、開発者モードを有効化してください:
+Windows で署名なしのローカルビルド/配布物を実行・テストする場合は、OSの開発者モードを有効にしてください。
 
 1. 設定 → プライバシーとセキュリティ → 開発者向け
-2. 「開発者モード」をオン
-3. 必要に応じて再起動
-
-注意: 本アプリは Windows でコードサインされていません。SmartScreen が警告する場合は「詳細情報」→「実行」から続行できます。
+2. 「開発者モード」をオンにする
+3. OSを再起動
 
 ### プロジェクト構成（抜粋）
 
@@ -81,19 +91,16 @@ src/
 └── shared/                     # 型・定数・IPC 定義
 ```
 
-### 技術スタック
+### 使用技術
 
-- Electron
-- React（MUI v7）
-- TypeScript
-- Vite
+- **Electron**
+- **React (MUI v7)**
+- **TypeScript**
+- **Zustand**
+- **i18next**
+- **Vite**
 
-### 実行モード
-
-- Development: `yarn dev`（Vite: `http://localhost:3001`, BrowserRouter）
-- Production: `yarn build && yarn start`（HashRouter で `dist/renderer/index.html` をロード）
-
-### Windows アイコン作成
+### Windows用アイコンの作成
 
 ```exec
 magick public/icon.png -define icon:auto-resize=256,128,96,64,48,32,24,16 public/icon.ico
