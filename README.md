@@ -23,7 +23,7 @@ Note: This project is not code-signed on Windows. If SmartScreen shows a warning
 
 ### Development Rules
 
-- Developer documentation should be placed in the `Documents` directory, except for `README.md`.
+- Developer documentation (except `README.md`, `README-ja.md`) should be placed in the `Documents` directory.
 - Always run the linter after making changes and apply appropriate fixes. If intentionally allowing a linter error, document the reason in a comment. **Building is for release only; linting is sufficient for debugging.**
 - When implementing models, place files per table.
 - Components to be modularized should be implemented in the `modules` directory.
