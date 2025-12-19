@@ -244,6 +244,26 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
         },
     },
     {
+        id: 'claude_code',
+        label: 'Claude Code',
+        os: ['win32', 'darwin', 'linux'],
+        files: {
+            win32: ['%USERPROFILE%\\.claude.json'],
+            darwin: ['~/.claude.json'],
+            linux: ['~/.claude.json'],
+        },
+    },
+    {
+        id: 'gemini_cli',
+        label: 'Gemini CLI',
+        os: ['win32', 'darwin', 'linux'],
+        files: {
+            win32: ['%USERPROFILE%\\.gemini\\GEMINI.md'],
+            darwin: ['~/.gemini/GEMINI.md'],
+            linux: ['~/.gemini/GEMINI.md'],
+        },
+    },
+    {
         id: 'tabby',
         label: 'Tabby Terminal',
         os: ['win32', 'darwin', 'linux'],
