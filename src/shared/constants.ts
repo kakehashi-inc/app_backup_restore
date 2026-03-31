@@ -103,9 +103,27 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             linux: '~/.config/Code',
         },
         files: {
-            win32: ['%APPDATA%\\Code\\User\\mcp.json'],
-            darwin: ['~/Library/Application Support/Code/User/mcp.json'],
-            linux: ['~/.config/Code/User/mcp.json'],
+            win32: [
+                '%APPDATA%\\Code\\User\\keybindings.json',
+                '%APPDATA%\\Code\\User\\chatLanguageModels.json',
+                '%APPDATA%\\Code\\User\\mcp.json',
+                '%APPDATA%\\Code\\User\\settings.json',
+                '%APPDATA%\\Code\\User\\tasks.json',
+            ],
+            darwin: [
+                '~/Library/Application Support/Code/User/keybindings.json',
+                '~/Library/Application Support/Code/User/chatLanguageModels.json',
+                '~/Library/Application Support/Code/User/mcp.json',
+                '~/Library/Application Support/Code/User/settings.json',
+                '~/Library/Application Support/Code/User/tasks.json',
+            ],
+            linux: [
+                '~/.config/Code/User/keybindings.json',
+                '~/.config/Code/User/chatLanguageModels.json',
+                '~/.config/Code/User/mcp.json',
+                '~/.config/Code/User/settings.json',
+                '~/.config/Code/User/tasks.json',
+            ],
         },
     },
     {
@@ -120,9 +138,21 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             linux: '~/.config/Cursor',
         },
         files: {
-            win32: ['%USERPROFILE%\\.cursor\\mcp.json'],
-            darwin: ['~/.cursor/mcp.json'],
-            linux: ['~/.cursor/mcp.json'],
+            win32: [
+                '%APPDATA%\\Cursor\\User\\keybindings.json',
+                '%APPDATA%\\Cursor\\User\\settings.json',
+                '%USERPROFILE%\\.cursor\\mcp.json',
+            ],
+            darwin: [
+                '~/Library/Application Support/Cursor/User/keybindings.json',
+                '~/Library/Application Support/Cursor/User/settings.json',
+                '~/.cursor/mcp.json',
+            ],
+            linux: [
+                '~/.config/Cursor/User/keybindings.json',
+                '~/.config/Cursor/User/settings.json',
+                '~/.cursor/mcp.json',
+            ],
         },
     },
     {
@@ -132,14 +162,29 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
         command: 'antigravity',
         darwinAppName: 'Antigravity.app',
         settingsPaths: {
-            win32: '%APPDATA%\\Antigravity\\User',
-            darwin: '~/Library/Application Support/Antigravity/User',
-            linux: '~/.config/Antigravity/User',
+            win32: '%APPDATA%\\Antigravity',
+            darwin: '~/Library/Application Support/Antigravity',
+            linux: '~/.config/Antigravity',
         },
         files: {
-            win32: ['%USERPROFILE%\\.gemini\\antigravity\\mcp_config.json', '%USERPROFILE%\\.gemini\\GEMINI.md'],
-            darwin: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
-            linux: ['~/.gemini/antigravity/mcp_config.json', '~/.gemini/GEMINI.md'],
+            win32: [
+                '%APPDATA%\\Antigravity\\User\\keybindings.json',
+                '%APPDATA%\\Antigravity\\User\\settings.json',
+                '%USERPROFILE%\\.gemini\\antigravity\\mcp_config.json',
+                '%USERPROFILE%\\.gemini\\GEMINI.md',
+            ],
+            darwin: [
+                '~/Library/Application Support/Antigravity/User/keybindings.json',
+                '~/Library/Application Support/Antigravity/User/settings.json',
+                '~/.gemini/antigravity/mcp_config.json',
+                '~/.gemini/GEMINI.md',
+            ],
+            linux: [
+                '~/.config/Antigravity/User/keybindings.json',
+                '~/.config/Antigravity/User/settings.json',
+                '~/.gemini/antigravity/mcp_config.json',
+                '~/.gemini/GEMINI.md',
+            ],
         },
     },
     {
@@ -152,6 +197,14 @@ export const VS_CODE_DEFS: readonly VSCodeDef[] = [
             win32: '%APPDATA%\\Void',
             darwin: '~/Library/Application Support/Void',
             linux: '~/.config/Void',
+        },
+        files: {
+            win32: ['%APPDATA%\\Void\\User\\keybindings.json', '%APPDATA%\\Void\\User\\settings.json'],
+            darwin: [
+                '~/Library/Application Support/Void/User/keybindings.json',
+                '~/Library/Application Support/Void/User/settings.json',
+            ],
+            linux: ['~/.config/Void/User/keybindings.json', '~/.config/Void/User/settings.json'],
         },
     },
 ];
@@ -181,9 +234,9 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
         label: 'Git',
         os: ['win32', 'darwin', 'linux'],
         files: {
-            win32: ['%USERPROFILE%\\.gitconfig'],
-            darwin: ['~/.gitconfig'],
-            linux: ['~/.gitconfig'],
+            win32: ['%USERPROFILE%\\.gitconfig', '%USERPROFILE%\\.config\\git\\ignore'],
+            darwin: ['~/.gitconfig', '~/.config/git/ignore'],
+            linux: ['~/.gitconfig', '~/.config/git/ignore'],
         },
     },
     {
@@ -248,9 +301,12 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
         label: 'Claude Code',
         os: ['win32', 'darwin', 'linux'],
         files: {
-            win32: ['%USERPROFILE%\\.claude.json'],
-            darwin: ['~/.claude.json'],
-            linux: ['~/.claude.json'],
+            win32: [
+                '%USERPROFILE%\\.claude.json',
+                '%USERPROFILE%\\.claude\\settings.json',
+            ],
+            darwin: ['~/.claude.json', '~/.claude/settings.json'],
+            linux: ['~/.claude.json', '~/.claude/settings.json'],
         },
     },
     {
@@ -278,12 +334,12 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
         label: 'FileZilla',
         os: ['win32', 'darwin', 'linux'],
         files: {
-            win32: ['%APPDATA%\\FileZilla\\filezilla.xml'],
+            win32: ['%APPDATA%\\FileZilla\\filezilla.xml', '%APPDATA%\\FileZilla\\sitemanager.xml'],
             darwin: [
-                '~/Library/Application Support/FileZilla/filezilla.xml',
                 '~/Library/Containers/org.filezilla-project.filezilla.sandbox/Data/.config/filezilla/filezilla.xml',
+                '~/Library/Containers/org.filezilla-project.filezilla.sandbox/Data/.config/filezilla/sitemanager.xml',
             ],
-            linux: ['~/.config/filezilla/filezilla.xml'],
+            linux: ['~/.config/filezilla/filezilla.xml', '~/.config/filezilla/sitemanager.xml'],
         },
     },
     {
