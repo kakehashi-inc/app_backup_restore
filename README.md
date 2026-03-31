@@ -21,16 +21,6 @@ Note: This project is not code-signed on Windows. If SmartScreen shows a warning
 
 ## 3. Developer Reference
 
-### Development Rules
-
-- Developer documentation (except `README.md`, `README-ja.md`) should be placed in the `Documents` directory.
-- Always run the linter after making changes and apply appropriate fixes. If intentionally allowing a linter error, document the reason in a comment. **Building is for release only; linting is sufficient for debugging.**
-- When implementing models, place files per table.
-- Components to be modularized should be implemented in the `modules` directory.
-- Temporary scripts (e.g., investigation scripts) should be placed in the `scripts` directory.
-- When creating or modifying models, update `Documents/Table Definition.md`. Express table definitions as tables per entity, including column names, types, and relations.
-- When system behavior changes, update `Documents/System Specification.md`.
-
 ### Requirements
 
 - Node.js 22.x or higher
