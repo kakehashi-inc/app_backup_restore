@@ -2,6 +2,7 @@ import { loadConfig } from './config';
 import {
     runSequentialInstall,
     runRestoreConfig,
+    getRestoreConfigConflicts,
     generateScriptContent,
     restoreVSCodeSettings,
     buildVSCodeInstallCommand,
@@ -40,8 +41,12 @@ export class RestoreManager {
         }
     }
 
-    async runRestoreConfig(configAppId: string) {
-        await runRestoreConfig(this.getBackupDirectory(), configAppId);
+    getRestoreConfigConflicts(configAppId: string) {
+        return getRestoreConfigConflicts(this.getBackupDirectory(), configAppId);
+    }
+
+    async runRestoreConfig(configAppId: string, skipPaths: string[] = []) {
+        await runRestoreConfig(this.getBackupDirectory(), configAppId, skipPaths);
         return { success: true };
     }
 

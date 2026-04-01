@@ -82,8 +82,12 @@ export function registerIpcHandlers() {
         return restoreManager.runRestoreVSCodeWSL(req);
     });
 
-    ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_CONFIG, async (_e, configAppId: string) => {
-        return restoreManager.runRestoreConfig(configAppId);
+    ipcMain.handle(IPC_CHANNELS.RESTORE_GET_CONFIG_CONFLICTS, async (_e, configAppId: string) => {
+        return restoreManager.getRestoreConfigConflicts(configAppId);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.RESTORE_RUN_CONFIG, async (_e, configAppId: string, skipPaths?: string[]) => {
+        return restoreManager.runRestoreConfig(configAppId, skipPaths);
     });
 
     ipcMain.handle(IPC_CHANNELS.RESTORE_GET_SCRIPT_CONTENT, async (_e, req: RestoreRequest | VSCodeRestoreRequest) => {

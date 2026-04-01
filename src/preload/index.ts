@@ -24,6 +24,7 @@ const IPC_CHANNELS = {
     RESTORE_RUN_VSCODE: 'restore:runVSCode',
     RESTORE_RUN_VSCODE_WSL: 'restore:runVSCodeWSL',
     RESTORE_RUN_CONFIG: 'restore:runConfig',
+    RESTORE_GET_CONFIG_CONFLICTS: 'restore:getConfigConflicts',
     RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
     RESTORE_VSCODE_SETTINGS: 'restore:vscodeSettings',
     TASK_PROGRESS: 'task:progress',
@@ -105,9 +106,12 @@ const api: IpcApi = {
         // @ts-ignore widen api
         return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_VSCODE_WSL, req);
     },
-    async runRestoreConfig(configAppId) {
+    async getRestoreConfigConflicts(configAppId) {
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_GET_CONFIG_CONFLICTS, configAppId);
+    },
+    async runRestoreConfig(configAppId, skipPaths) {
         // @ts-ignore widen api
-        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_CONFIG, configAppId);
+        return ipcRenderer.invoke(IPC_CHANNELS.RESTORE_RUN_CONFIG, configAppId, skipPaths);
     },
     async getScriptContent(req) {
         // @ts-ignore widen api

@@ -2,14 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { runCommand, resolveVSCodeCommandPath } from '../utils/exec';
-import { copyFile, resolveEnvPath } from '../utils/fsx';
+import { copyFile, isDirectoryPath, resolveEnvPath } from '../utils/fsx';
 import {
     CONFIG_APP_DEFS,
     VS_CODE_DEFS,
     VS_CODE_BACKUP_FILES,
     getConfigAppBackupFileName,
 } from '../../shared/constants';
-import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest } from '../../shared/types';
+import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest, RestoreConflictItem } from '../../shared/types';
 
 function buildInstallCommand(
     manager: ManagerId,
@@ -62,7 +62,96 @@ export function buildVSCodeInstallCommand(vscodeId: VSCodeId, extensionId: strin
     return { cmd: command, args: ['--install-extension', extensionId] };
 }
 
-export async function runRestoreConfig(backupDir: string, configAppId: string): Promise<void> {
+/**
+ * Collect files from a directory recursively.
+ * Returns relative paths from the base directory.
+ */
+function collectFiles(dir: string, base: string = dir): string[] {
+    const result: string[] = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            result.push(...collectFiles(fullPath, base));
+        } else {
+            result.push(path.relative(base, fullPath));
+        }
+    }
+    return result;
+}
+
+/**
+ * Get file info (size and mtime) for conflict display.
+ */
+function getFileInfo(filePath: string): { size: number; mtime: string } {
+    const stats = fs.statSync(filePath);
+    return { size: stats.size, mtime: stats.mtime.toISOString() };
+}
+
+/**
+ * Detect files that would conflict (already exist at target) during restore.
+ */
+export function getRestoreConfigConflicts(backupDir: string, configAppId: string): RestoreConflictItem[] {
+    const appDef = CONFIG_APP_DEFS.find(def => def.id === configAppId);
+    if (!appDef) return [];
+
+    const platform = os.platform() as 'win32' | 'darwin' | 'linux';
+    const filePaths = appDef.files[platform];
+    if (!filePaths || filePaths.length === 0) return [];
+
+    const conflicts: RestoreConflictItem[] = [];
+
+    for (const filePath of filePaths) {
+        const resolved = resolveEnvPath(filePath);
+        const basename = path.basename(resolved);
+        const backupSource = path.join(backupDir, getConfigAppBackupFileName(configAppId, basename));
+
+        if (!fs.existsSync(backupSource)) continue;
+
+        if (isDirectoryPath(filePath)) {
+            // For directories, compare individual files inside
+            const files = collectFiles(backupSource);
+            for (const relFile of files) {
+                const targetFile = path.join(resolved, relFile);
+                if (fs.existsSync(targetFile)) {
+                    const backupInfo = getFileInfo(path.join(backupSource, relFile));
+                    const targetInfo = getFileInfo(targetFile);
+                    conflicts.push({
+                        filePath: path.join(basename, relFile).replace(/\\/g, '/'),
+                        backupSize: backupInfo.size,
+                        backupMtime: backupInfo.mtime,
+                        targetSize: targetInfo.size,
+                        targetMtime: targetInfo.mtime,
+                    });
+                }
+            }
+        } else {
+            if (fs.existsSync(resolved)) {
+                const backupInfo = getFileInfo(backupSource);
+                const targetInfo = getFileInfo(resolved);
+                conflicts.push({
+                    filePath: basename,
+                    backupSize: backupInfo.size,
+                    backupMtime: backupInfo.mtime,
+                    targetSize: targetInfo.size,
+                    targetMtime: targetInfo.mtime,
+                });
+            }
+        }
+    }
+
+    return conflicts;
+}
+
+/**
+ * Restore config files from backup.
+ * @param skipPaths - file paths (relative, as returned by getRestoreConfigConflicts) to skip
+ */
+export async function runRestoreConfig(
+    backupDir: string,
+    configAppId: string,
+    skipPaths: string[] = []
+): Promise<void> {
     const appDef = CONFIG_APP_DEFS.find(def => def.id === configAppId);
     if (!appDef) {
         throw new Error(`Unknown config app: ${configAppId}`);
@@ -75,17 +164,29 @@ export async function runRestoreConfig(backupDir: string, configAppId: string): 
         throw new Error(`No config files defined for ${configAppId} on ${platform}`);
     }
 
+    const skipSet = new Set(skipPaths);
+
     for (const filePath of filePaths) {
         const resolved = resolveEnvPath(filePath);
         const basename = path.basename(resolved);
-        const backupFile = path.join(backupDir, getConfigAppBackupFileName(configAppId, basename));
+        const backupSource = path.join(backupDir, getConfigAppBackupFileName(configAppId, basename));
 
-        if (fs.existsSync(backupFile)) {
-            // Check if target file already exists
-            if (fs.existsSync(resolved)) {
-                console.log(`Overwriting ${resolved}`);
+        if (fs.existsSync(backupSource)) {
+            if (isDirectoryPath(filePath)) {
+                // For directories, copy files individually to respect skip list
+                const files = collectFiles(backupSource);
+                for (const relFile of files) {
+                    const displayPath = path.join(basename, relFile).replace(/\\/g, '/');
+                    if (skipSet.has(displayPath)) continue;
+
+                    const src = path.join(backupSource, relFile);
+                    const dest = path.join(resolved, relFile);
+                    await copyFile(src, dest);
+                }
+            } else {
+                if (skipSet.has(basename)) continue;
+                await copyFile(backupSource, resolved);
             }
-            await copyFile(backupFile, resolved);
         }
     }
 }

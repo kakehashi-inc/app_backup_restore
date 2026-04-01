@@ -13,6 +13,7 @@ import type {
     AppLanguage,
     AppTheme,
     VSCodeRestoreRequest,
+    RestoreConflictItem,
 } from './types';
 
 export type IpcApi = {
@@ -35,7 +36,8 @@ export type IpcApi = {
     runRestore(req: RestoreRequest): Promise<void>;
     runRestoreVSCode?(req: VSCodeRestoreRequest): Promise<void>;
     runRestoreVSCodeWSL?(req: VSCodeRestoreRequest): Promise<void>;
-    runRestoreConfig?(configAppId: string): Promise<{ success: boolean }>;
+    getRestoreConfigConflicts?(configAppId: string): Promise<RestoreConflictItem[]>;
+    runRestoreConfig?(configAppId: string, skipPaths?: string[]): Promise<{ success: boolean }>;
     getScriptContent?(req: RestoreRequest | VSCodeRestoreRequest): Promise<{ content: string }>;
     restoreVSCodeSettings?(vscodeId: VSCodeId): Promise<{ success: boolean }>;
     onTaskProgress(handler: (message: string | { key: string; params: Record<string, any> }) => void): () => void; // returns unsubscribe

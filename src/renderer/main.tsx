@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next';
 import './i18n/config';
 import TitleBar from './components/TitleBar';
 import MessageDialog from './components/MessageDialog';
+import RestoreConfirmDialog from './components/RestoreConfirmDialog';
 import { useMessageDialog } from './hooks/useMessageDialog';
+import { useRestoreConfirm } from './hooks/useRestoreConfirm';
 import useAppStore from './store/useAppStore';
 import { HomePage } from './pages/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -20,6 +22,7 @@ import type { ManagerId, VSCodeId, MergedPackageItem, AppTheme, AppInfo } from '
 function App() {
     const { t, i18n } = useTranslation();
     const { dialogState, showYesNo, handleClose, handleResult } = useMessageDialog();
+    const { restoreConfirmState, currentConflict, showConflicts, handleRestoreConfirmResult } = useRestoreConfirm();
 
     // Get state and setters from Zustand store
     const {
@@ -505,11 +508,21 @@ function App() {
     const runRestore = async (id: string) => {
         if (!(await confirm(t('confirmRestore')))) return;
 
-        setIsProcessing(true);
-        setProcessingMessage(t('restoringSingle', { name: id }));
-
         try {
-            await window.abr.runRestoreConfig?.(id as any);
+            // Check for conflicts before restoring
+            const conflicts = (await window.abr.getRestoreConfigConflicts?.(id)) || [];
+            let skipPaths: string[] = [];
+
+            if (conflicts.length > 0) {
+                const result = await showConflicts(conflicts);
+                if (result === null) return; // cancelled
+                skipPaths = result;
+            }
+
+            setIsProcessing(true);
+            setProcessingMessage(t('restoringSingle', { name: id }));
+
+            await window.abr.runRestoreConfig?.(id as any, skipPaths);
             showToast(t('restoreSuccess'), 'success');
         } catch (error) {
             console.error(`Failed to restore ${id}:`, error);
@@ -845,6 +858,25 @@ function App() {
                             {snackbar.message}
                         </Alert>
                     </Snackbar>
+
+                    {/* Restore Confirm Dialog */}
+                    <RestoreConfirmDialog
+                        open={restoreConfirmState.open}
+                        conflict={currentConflict}
+                        currentIndex={restoreConfirmState.currentIndex}
+                        totalCount={restoreConfirmState.conflicts.length}
+                        onResult={handleRestoreConfirmResult}
+                        labels={{
+                            title: t('restoreConfirmTitle'),
+                            message: t('restoreConfirmMessage'),
+                            backup: t('restoreConfirmBackup'),
+                            target: t('restoreConfirmTarget'),
+                            overwriteAll: t('restoreOverwriteAll'),
+                            yes: t('yes'),
+                            no: t('no'),
+                            skipAll: t('restoreSkipAll'),
+                        }}
+                    />
 
                     {/* Custom Dialog */}
                     {dialogState.options && (

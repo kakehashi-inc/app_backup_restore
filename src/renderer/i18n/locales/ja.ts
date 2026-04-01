@@ -58,6 +58,13 @@ export default {
     backupConfigSuccess: '{{name}}のバックアップが完了しました',
     backupConfigFailed: '{{name}}のバックアップに失敗しました',
     noBackupsCompleted: 'バックアップが完了した項目がありません',
+    // Restore confirm dialog
+    restoreConfirmTitle: '上書き確認',
+    restoreConfirmMessage: 'ファイルを上書きしますか？',
+    restoreConfirmBackup: 'バックアップ:',
+    restoreConfirmTarget: '復元先:',
+    restoreOverwriteAll: 'すべて上書き',
+    restoreSkipAll: 'すべてスキップ',
     // Dialog strings
     ok: 'OK',
     yes: 'はい',

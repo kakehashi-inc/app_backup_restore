@@ -54,6 +54,7 @@ export const IPC_CHANNELS = {
     RESTORE_RUN_VSCODE: 'restore:runVSCode',
     RESTORE_RUN_VSCODE_WSL: 'restore:runVSCodeWSL',
     RESTORE_RUN_CONFIG: 'restore:runConfig',
+    RESTORE_GET_CONFIG_CONFLICTS: 'restore:getConfigConflicts',
     RESTORE_GET_SCRIPT_CONTENT: 'restore:getScriptContent',
     RESTORE_VSCODE_SETTINGS: 'restore:vscodeSettings',
     TASK_PROGRESS: 'task:progress',
@@ -304,9 +305,10 @@ export const CONFIG_APP_DEFS: ConfigAppDef[] = [
             win32: [
                 '%USERPROFILE%\\.claude.json',
                 '%USERPROFILE%\\.claude\\settings.json',
+                '%USERPROFILE%\\.claude\\skills\\',
             ],
-            darwin: ['~/.claude.json', '~/.claude/settings.json'],
-            linux: ['~/.claude.json', '~/.claude/settings.json'],
+            darwin: ['~/.claude.json', '~/.claude/settings.json', '~/.claude/skills/'],
+            linux: ['~/.claude.json', '~/.claude/settings.json', '~/.claude/skills/'],
         },
     },
     {

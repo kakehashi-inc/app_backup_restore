@@ -34,6 +34,15 @@ export async function copyFile(src: string, dest: string) {
     await fs.promises.copyFile(src, dest);
 }
 
+export function isDirectoryPath(filePath: string): boolean {
+    return filePath.endsWith('/') || filePath.endsWith('\\');
+}
+
+export async function copyDir(src: string, dest: string) {
+    await ensureDir(dest);
+    await fs.promises.cp(src, dest, { recursive: true, preserveTimestamps: true });
+}
+
 export function resolveEnvPath(pathStr: string): string {
     const platform = os.platform();
     let resolved = pathStr;

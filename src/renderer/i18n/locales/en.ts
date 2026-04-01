@@ -58,6 +58,13 @@ export default {
     backupConfigSuccess: 'Successfully backed up {{name}}',
     backupConfigFailed: 'Failed to backup {{name}}',
     noBackupsCompleted: 'No backups were completed successfully',
+    // Restore confirm dialog
+    restoreConfirmTitle: 'Overwrite Confirmation',
+    restoreConfirmMessage: 'Do you want to overwrite this file?',
+    restoreConfirmBackup: 'Backup:',
+    restoreConfirmTarget: 'Restore target:',
+    restoreOverwriteAll: 'Overwrite All',
+    restoreSkipAll: 'Skip All',
     // Dialog strings
     ok: 'OK',
     yes: 'Yes',

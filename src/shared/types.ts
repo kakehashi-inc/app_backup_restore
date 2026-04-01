@@ -171,6 +171,14 @@ export type ManagerRow = {
     lastBackup?: string;
 };
 
+export type RestoreConflictItem = {
+    filePath: string; // relative display path (e.g., "skills/my_skill.md")
+    backupSize: number; // bytes
+    backupMtime: string; // ISO 8601
+    targetSize: number; // bytes
+    targetMtime: string; // ISO 8601
+};
+
 export type MergedPackageItem = {
     id: string; // PackageId or Name
     name: string; // Display name

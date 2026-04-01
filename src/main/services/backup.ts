@@ -11,7 +11,7 @@ import {
     getConfigAppBackupFileName,
 } from '../../shared/constants';
 import type { ManagerId, VSCodeId, VSCodeExtensionItem } from '../../shared/types';
-import { writeJsonFile, readJsonFile, copyFile, resolveEnvPath } from '../utils/fsx';
+import { writeJsonFile, readJsonFile, copyFile, copyDir, isDirectoryPath, resolveEnvPath } from '../utils/fsx';
 import {
     listWinget,
     listMsStore,
@@ -218,21 +218,27 @@ export function getBackupLastModified(backupDir: string, id: string): string | n
         }
 
         try {
-            const files = fs.readdirSync(backupSubDir);
-            let mostRecentTime = 0;
-            let mostRecentDate: string | null = null;
-
-            for (const file of files) {
-                const filePath = path.join(backupSubDir, file);
-                const stats = fs.statSync(filePath);
-
-                if (stats.mtime.getTime() > mostRecentTime) {
-                    mostRecentTime = stats.mtime.getTime();
-                    mostRecentDate = stats.mtime.toISOString();
+            const getNewestMtime = (dir: string): number => {
+                let newest = 0;
+                const entries = fs.readdirSync(dir, { withFileTypes: true });
+                for (const entry of entries) {
+                    const fullPath = path.join(dir, entry.name);
+                    const stats = fs.statSync(fullPath);
+                    if (stats.mtime.getTime() > newest) {
+                        newest = stats.mtime.getTime();
+                    }
+                    if (entry.isDirectory()) {
+                        const subNewest = getNewestMtime(fullPath);
+                        if (subNewest > newest) {
+                            newest = subNewest;
+                        }
+                    }
                 }
-            }
+                return newest;
+            };
 
-            return mostRecentDate;
+            const newestTime = getNewestMtime(backupSubDir);
+            return newestTime > 0 ? new Date(newestTime).toISOString() : null;
         } catch (error) {
             console.error(`Failed to get stats for directory ${backupSubDir}:`, error);
             return null;
@@ -387,7 +393,11 @@ export async function runBackupConfig(backupDir: string, configAppId: string): P
             if (fs.existsSync(resolved)) {
                 const basename = path.basename(resolved);
                 const dest = path.join(backupDir, getConfigAppBackupFileName(configAppId, basename));
-                await copyFile(resolved, dest);
+                if (isDirectoryPath(filePath)) {
+                    await copyDir(resolved, dest);
+                } else {
+                    await copyFile(resolved, dest);
+                }
                 written.push(dest);
             }
         }
