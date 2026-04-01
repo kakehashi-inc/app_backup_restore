@@ -17,8 +17,7 @@ releaseInfo:
   releaseNotes: |
     ## New Features
 
-    - Add directory-mode backup/restore: paths ending with a separator are now recursively copied with timestamps preserved
-    - Add per-file overwrite confirmation dialog during config restore with Overwrite All / Yes / No / Skip All options
+    -
 
     ## Bug Fixes
 
