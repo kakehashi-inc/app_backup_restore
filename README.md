@@ -1,23 +1,24 @@
 # App Backup Restore
 
-Electron-based desktop application for backing up and restoring development environment package managers and editor extensions.
-Designed for Windows / macOS / Linux.
+An Electron-based desktop application.
+It backs up and restores package managers and editor extensions used in your development environment.
+Designed with Windows / macOS / Linux in mind.
 
 ## Features
 
 - Backup package managers (export installed identifiers to JSON)
-- VS Code family variants, config files, and extension lists (includes WSL-installed extensions on Windows)
-- Full or individual backups
-- Browse backup data
-- Restore per app
+- VS Code family variants, configuration files, and extension lists (includes extensions installed inside WSL on Windows)
+- Backup everything at once, or individually
+- List backup data
+- Restore per application
 
 ## Supported OS
 
 - Windows 11 (WSL aware)
 - macOS 10.15+
-- Linux (Debian/RHEL-based)
+- Linux (Debian-based / RHEL-based)
 
-Note: This project is not code-signed on Windows. If SmartScreen shows a warning, click "More info" → "Run anyway".
+Note: This project is not code-signed on Windows. If SmartScreen displays a warning, click "More info" → "Run anyway".
 
 ## 3. Developer Reference
 
@@ -43,21 +44,36 @@ yarn dev
 
 DevTools in development:
 
-- DevTools open in detached mode automatically
+- DevTools open automatically in detached mode
 - Toggle with F12 or Ctrl+Shift+I (Cmd+Option+I on macOS)
 
-### Build/Distribute
+### Build / Distribute
 
-- All platforms: `yarn dist`
 - Windows: `yarn dist:win`
 - macOS: `yarn dist:mac`
 - Linux: `yarn dist:linux`
 
-In development the app uses BrowserRouter with `<http://localhost:3001>`, and in production it uses HashRouter to load `dist/renderer/index.html`.
+In development the app uses BrowserRouter to load `<http://localhost:3001>`. In distribution builds it uses HashRouter to load `dist/renderer/index.html`.
 
-### macOS Prerequisite: Signing & Notarization Environment Variables
+### Direct Release to GitHub (for Auto-Update)
 
-To build a signed and notarized macOS distribution, set the following environment variables before running `yarn dist:mac`:
+These commands upload build artifacts and `latest*.yml` (auto-update metadata) directly to the GitHub repository configured in `publish:` of `electron-builder.yml`. Because `releaseType: draft` is configured, each command **aggregates artifacts into a single draft release of the same version** on GitHub. Once all platforms are in place, press "Publish release" in the GitHub UI to deliver the update to users.
+
+- Windows: `yarn release:win`
+- macOS: `yarn release:mac`
+- Linux: `yarn release:linux`
+
+Before running, set a GitHub Personal Access Token (`public_repo` scope) in the `GH_TOKEN` environment variable.
+
+```bash
+export GH_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
+```
+
+When building each platform on multiple machines, make sure the `version` in `package.json` matches across all machines, then run the corresponding `release:*` command on each machine in order.
+
+### macOS Prerequisite: Environment Variables for Signing & Notarization
+
+To build a signed and notarized macOS distribution, set the following environment variables before running `yarn dist:mac`.
 
 ```bash
 export APPLE_ID="your-apple-id@example.com"
@@ -67,9 +83,9 @@ export APPLE_TEAM_ID="XXXXXXXXXX"
 
 ### Windows Prerequisite: Developer Mode
 
-When building or running unsigned local releases on Windows, enable Developer Mode:
+To run or test unsigned local builds/distributables on Windows, enable Developer Mode in the OS.
 
-1. Open Settings → Privacy & security → For developers
+1. Settings → Privacy & security → For developers
 2. Turn on "Developer Mode"
 3. Reboot the OS
 
