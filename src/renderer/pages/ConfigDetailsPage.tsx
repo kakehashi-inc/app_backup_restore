@@ -20,7 +20,7 @@ export const ConfigDetailsPage: React.FC<ConfigDetailsPageProps> = ({ onBackup, 
         <Container maxWidth={false} sx={{ py: 2 }}>
             <Paper sx={{ p: 2, mb: 4 }}>
                 {/* Header with Back button */}
-                <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
+                <Stack direction='row' spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
                     <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
                         {configDef?.label || selectedManager}
                     </Typography>
@@ -32,7 +32,7 @@ export const ConfigDetailsPage: React.FC<ConfigDetailsPageProps> = ({ onBackup, 
                 <Divider sx={{ mb: 2 }} />
 
                 {/* Action buttons */}
-                <Stack direction='row' spacing={2} alignItems='center'>
+                <Stack direction='row' spacing={2} sx={{ alignItems: 'center' }}>
                     <Button variant='contained' onClick={onBackup}>
                         {t('backup')}
                     </Button>

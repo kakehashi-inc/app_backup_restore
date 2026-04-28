@@ -186,3 +186,12 @@ export type MergedPackageItem = {
     isInstalled: boolean; // true if currently installed, false if backup-only
     source?: 'installed' | 'backup' | 'both';
 };
+
+export type UpdateStatus = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
+
+export type UpdateState = {
+    status: UpdateStatus;
+    version?: string;
+    progress?: number;
+    error?: string;
+};

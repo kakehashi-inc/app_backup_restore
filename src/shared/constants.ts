@@ -66,6 +66,11 @@ export const IPC_CHANNELS = {
     WINDOW_CLOSE: 'window:close',
     WINDOW_IS_MAXIMIZED: 'window:isMaximized',
     MAIN_CONSOLE: 'main:console',
+    UPDATER_CHECK: 'updater:check',
+    UPDATER_DOWNLOAD: 'updater:download',
+    UPDATER_QUIT_AND_INSTALL: 'updater:quitAndInstall',
+    UPDATER_GET_STATE: 'updater:getState',
+    UPDATER_STATE_CHANGED: 'updater:stateChanged',
 } as const;
 
 // Manager definitions for UI

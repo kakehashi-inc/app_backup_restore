@@ -78,10 +78,12 @@ export const MessageDialog: React.FC<MessageDialogProps> = ({
             onClose={onClose}
             maxWidth='sm'
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 2,
-                    boxShadow: 3,
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 2,
+                        boxShadow: 3,
+                    },
                 },
             }}
         >

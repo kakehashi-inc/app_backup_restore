@@ -3,6 +3,7 @@ import { IPC_CHANNELS } from '../../shared/constants';
 import { chooseBackupDirectory, loadConfig, saveConfig, validateBackupDirectory } from '../services/config';
 import { backupManager } from '../services/backup-manager';
 import { restoreManager } from '../services/restore-manager';
+import { checkForUpdates, downloadUpdate, getUpdateState, quitAndInstall } from '../services/updater';
 import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest } from '../../shared/types';
 
 export function registerIpcHandlers() {
@@ -97,4 +98,9 @@ export function registerIpcHandlers() {
     ipcMain.handle(IPC_CHANNELS.RESTORE_VSCODE_SETTINGS, async (_e, vscodeId: VSCodeId) => {
         return restoreManager.restoreVSCodeSettings(vscodeId);
     });
+
+    ipcMain.handle(IPC_CHANNELS.UPDATER_GET_STATE, async () => getUpdateState());
+    ipcMain.handle(IPC_CHANNELS.UPDATER_CHECK, async () => checkForUpdates());
+    ipcMain.handle(IPC_CHANNELS.UPDATER_DOWNLOAD, async () => downloadUpdate());
+    ipcMain.handle(IPC_CHANNELS.UPDATER_QUIT_AND_INSTALL, async () => quitAndInstall());
 }

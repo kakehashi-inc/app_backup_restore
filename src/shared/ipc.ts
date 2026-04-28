@@ -14,7 +14,16 @@ import type {
     AppTheme,
     VSCodeRestoreRequest,
     RestoreConflictItem,
+    UpdateState,
 } from './types';
+
+export type UpdaterApi = {
+    getState(): Promise<UpdateState>;
+    check(): Promise<void>;
+    download(): Promise<void>;
+    quitAndInstall(): Promise<void>;
+    onStateChanged(handler: (state: UpdateState) => void): () => void;
+};
 
 export type IpcApi = {
     getConfig(): Promise<AppConfig>;
@@ -50,6 +59,8 @@ export type IpcApi = {
     maximizeOrRestore(): Promise<boolean>;
     isMaximized(): Promise<boolean>;
     close(): Promise<void>;
+    // Auto-updater
+    updater: UpdaterApi;
 };
 
 declare global {

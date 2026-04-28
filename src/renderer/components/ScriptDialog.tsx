@@ -30,9 +30,11 @@ export const ScriptDialog: React.FC<ScriptDialogProps> = ({ open, content, onClo
                     multiline
                     fullWidth
                     value={content}
-                    InputProps={{
-                        readOnly: true,
-                        sx: { fontFamily: 'monospace', fontSize: '0.9rem' },
+                    slotProps={{
+                        input: {
+                            readOnly: true,
+                            sx: { fontFamily: 'monospace', fontSize: '0.9rem' },
+                        },
                     }}
                     minRows={10}
                     maxRows={20}

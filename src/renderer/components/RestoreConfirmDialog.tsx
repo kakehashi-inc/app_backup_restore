@@ -56,10 +56,12 @@ export const RestoreConfirmDialog: React.FC<RestoreConfirmDialogProps> = ({
             open={open}
             maxWidth='sm'
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 2,
-                    boxShadow: 3,
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 2,
+                        boxShadow: 3,
+                    },
                 },
             }}
         >

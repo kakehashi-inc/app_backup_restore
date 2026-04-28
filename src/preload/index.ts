@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IpcApi } from '../shared/ipc';
-import type { VSCodeId } from '../shared/types';
+import type { UpdateState, VSCodeId } from '../shared/types';
 
 // Local copy to avoid runtime import from ../shared in preload
 const IPC_CHANNELS = {
@@ -37,6 +37,11 @@ const IPC_CHANNELS = {
     WINDOW_IS_MAXIMIZED: 'window:isMaximized',
     DIALOG_CONFIRM: 'dialog:confirm',
     MAIN_CONSOLE: 'main:console',
+    UPDATER_CHECK: 'updater:check',
+    UPDATER_DOWNLOAD: 'updater:download',
+    UPDATER_QUIT_AND_INSTALL: 'updater:quitAndInstall',
+    UPDATER_GET_STATE: 'updater:getState',
+    UPDATER_STATE_CHANGED: 'updater:stateChanged',
 } as const;
 
 const api: IpcApi = {
@@ -146,6 +151,25 @@ const api: IpcApi = {
     },
     async close() {
         return ipcRenderer.invoke(IPC_CHANNELS.WINDOW_CLOSE);
+    },
+    updater: {
+        async getState() {
+            return ipcRenderer.invoke(IPC_CHANNELS.UPDATER_GET_STATE);
+        },
+        async check() {
+            return ipcRenderer.invoke(IPC_CHANNELS.UPDATER_CHECK);
+        },
+        async download() {
+            return ipcRenderer.invoke(IPC_CHANNELS.UPDATER_DOWNLOAD);
+        },
+        async quitAndInstall() {
+            return ipcRenderer.invoke(IPC_CHANNELS.UPDATER_QUIT_AND_INSTALL);
+        },
+        onStateChanged(handler: (state: UpdateState) => void) {
+            const listener = (_e: unknown, state: UpdateState) => handler(state);
+            ipcRenderer.on(IPC_CHANNELS.UPDATER_STATE_CHANGED, listener);
+            return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATER_STATE_CHANGED, listener);
+        },
     },
 };
 

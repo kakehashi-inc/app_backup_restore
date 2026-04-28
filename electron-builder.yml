@@ -10,8 +10,8 @@ portable:
 publish:
   provider: github
   owner: kakehashi-inc
-  repo: https://github.com/kakehashi-inc/app_backup_restore
-  releaseType: release
+  repo: app_backup_restore
+  releaseType: draft
 releaseInfo:
   releaseName: "v${version}"
   releaseNotes: |

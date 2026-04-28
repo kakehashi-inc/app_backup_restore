@@ -4,6 +4,7 @@ import { registerIpcHandlers } from './ipc/index';
 import { ensureAppDirectories, loadConfig } from './services/config';
 import { setupConsoleBridge, setMainWindow } from './utils/console-bridge';
 import { fixPathOnMacOS } from './utils/exec';
+import { initializeUpdater, scheduleStartupCheck } from './services/updater';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -104,7 +105,12 @@ app.whenReady().then(async () => {
     ipcMain.handle('window:close', () => {
         mainWindow?.close();
     });
+
+    initializeUpdater();
     createWindow();
+    if (mainWindow) {
+        scheduleStartupCheck(mainWindow);
+    }
 });
 
 app.on('window-all-closed', () => {

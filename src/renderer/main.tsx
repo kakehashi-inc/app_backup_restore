@@ -7,6 +7,7 @@ import './i18n/config';
 import TitleBar from './components/TitleBar';
 import MessageDialog from './components/MessageDialog';
 import RestoreConfirmDialog from './components/RestoreConfirmDialog';
+import UpdateNotification from './components/UpdateNotification';
 import { useMessageDialog } from './hooks/useMessageDialog';
 import { useRestoreConfirm } from './hooks/useRestoreConfirm';
 import useAppStore from './store/useAppStore';
@@ -877,6 +878,9 @@ function App() {
                             skipAll: t('restoreSkipAll'),
                         }}
                     />
+
+                    {/* Auto-update notification */}
+                    <UpdateNotification />
 
                     {/* Custom Dialog */}
                     {dialogState.options && (

@@ -86,4 +86,12 @@ export default {
     wslNotAvailable: 'WSL is not available',
     extensions: 'Extensions',
     extensionsInWSL: 'Extensions in WSL',
+    // Updater
+    updater: {
+        confirm: 'A new version v{{version}} is available. Update now?',
+        update: 'Update',
+        later: 'Later',
+        downloading: 'Downloading... {{progress}}%',
+        installing: 'Applying update...',
+    },
 };

@@ -108,7 +108,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onChooseBackupDirect
                 fullWidth
                 size='small'
                 value={config.backupDirectory}
-                InputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 sx={{ mb: 2 }}
             />
             <Button variant='contained' onClick={onChooseBackupDirectory} sx={{ mb: 4 }}>
@@ -117,7 +117,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onChooseBackupDirect
 
             {/* Action Buttons */}
             <Divider sx={{ mb: 3 }} />
-            <Stack direction='row' spacing={2} justifyContent='flex-end'>
+            <Stack direction='row' spacing={2} sx={{ justifyContent: 'flex-end' }}>
                 <Button variant='text' onClick={onClose}>
                     {t('cancel')}
                 </Button>

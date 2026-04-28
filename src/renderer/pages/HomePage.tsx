@@ -119,7 +119,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <Container maxWidth={false} sx={{ py: 2 }}>
             {/* Packages & Extensions */}
             <Paper sx={{ p: 2, mb: 2 }}>
-                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                <Stack direction='row' sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant='h6'>{t('packagesTitle')}</Typography>
                     <Stack direction='row' spacing={1}>
                         <Button
@@ -226,7 +226,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* Backup Targets (config files) */}
             <Paper sx={{ p: 2, mb: 2 }}>
-                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                <Stack direction='row' sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant='h6'>{t('backupTargetsTitle')}</Typography>
                     <Button
                         variant='contained'
@@ -326,7 +326,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* Processing overlay */}
             <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={isProcessing}>
-                <Stack direction='column' alignItems='center' spacing={2}>
+                <Stack direction='column' spacing={2} sx={{ alignItems: 'center' }}>
                     <CircularProgress color='inherit' />
                     <Typography variant='h6'>{processingMessage || t('processing')}</Typography>
                 </Stack>

@@ -9,7 +9,13 @@ import {
     VS_CODE_BACKUP_FILES,
     getConfigAppBackupFileName,
 } from '../../shared/constants';
-import type { ManagerId, RestoreRequest, VSCodeId, VSCodeRestoreRequest, RestoreConflictItem } from '../../shared/types';
+import type {
+    ManagerId,
+    RestoreRequest,
+    VSCodeId,
+    VSCodeRestoreRequest,
+    RestoreConflictItem,
+} from '../../shared/types';
 
 function buildInstallCommand(
     manager: ManagerId,

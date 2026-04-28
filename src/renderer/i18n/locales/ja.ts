@@ -87,4 +87,12 @@ export default {
     wslNotAvailable: 'WSLが利用できません',
     extensions: '拡張機能',
     extensionsInWSL: 'WSL内の拡張機能',
+    // Updater
+    updater: {
+        confirm: '新しいバージョン v{{version}} が利用可能です。アップデートしますか？',
+        update: 'アップデート',
+        later: '後で',
+        downloading: 'ダウンロード中… {{progress}}%',
+        installing: 'アップデートを適用しています…',
+    },
 };

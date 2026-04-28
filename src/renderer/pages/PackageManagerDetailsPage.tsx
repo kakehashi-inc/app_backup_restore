@@ -59,7 +59,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
         <Container maxWidth={false} sx={{ py: 2 }}>
             <Paper sx={{ p: 2, mb: 4 }}>
                 {/* Header with Back button */}
-                <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
+                <Stack direction='row' spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
                     <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
                         {managerDef?.label || selectedManager}
                     </Typography>
@@ -71,7 +71,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                 <Divider sx={{ mb: 2 }} />
 
                 {/* Action buttons */}
-                <Stack direction='row' spacing={2} alignItems='center'>
+                <Stack direction='row' spacing={2} sx={{ alignItems: 'center' }}>
                     <Button variant='outlined' onClick={onRefresh} disabled={loadingItems || isProcessing}>
                         {loadingItems ? (
                             <>
@@ -147,7 +147,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
 
                 {/* Package list */}
                 {loadingItems ? (
-                    <Stack direction='row' alignItems='center' spacing={1} sx={{ py: 4 }}>
+                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center', py: 4 }}>
                         <CircularProgress size={20} />
                         <Typography variant='body2'>{progressMessage || t('loading')}</Typography>
                     </Stack>
@@ -176,7 +176,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={
-                                            <Stack direction='row' spacing={1} alignItems='center'>
+                                            <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
                                                 <Typography>{it.name}</Typography>
                                                 <Typography
                                                     variant='caption'
@@ -206,7 +206,7 @@ export const PackageManagerDetailsPage: React.FC<PackageManagerDetailsPageProps>
 
             {/* Processing overlay */}
             <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={isProcessing}>
-                <Stack direction='column' alignItems='center' spacing={2}>
+                <Stack direction='column' spacing={2} sx={{ alignItems: 'center' }}>
                     <CircularProgress color='inherit' />
                     <Typography variant='h6'>{processingMessage || t('processing')}</Typography>
                 </Stack>
