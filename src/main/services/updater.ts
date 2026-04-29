@@ -4,6 +4,10 @@ import { IPC_CHANNELS } from '../../shared/constants';
 import type { UpdateState } from '../../shared/types';
 
 const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+// When running as a Windows portable build, electron-builder sets PORTABLE_EXECUTABLE_FILE.
+// Skip auto-updater entirely in that mode to avoid downloading the NSIS installer
+// and silently installing the regular build to an unintended location.
+const isPortable = !!process.env.PORTABLE_EXECUTABLE_FILE;
 
 let currentState: UpdateState = { status: 'idle' };
 let initialized = false;
@@ -29,6 +33,7 @@ export function getUpdateState(): UpdateState {
 
 export function initializeUpdater() {
     if (isDev) return;
+    if (isPortable) return;
     if (initialized) return;
     initialized = true;
 
@@ -76,6 +81,7 @@ export function initializeUpdater() {
 
 export async function checkForUpdates() {
     if (isDev) return;
+    if (isPortable) return;
     if (!initialized) return;
     try {
         await autoUpdater.checkForUpdates();
@@ -86,6 +92,7 @@ export async function checkForUpdates() {
 
 export async function downloadUpdate() {
     if (isDev) return;
+    if (isPortable) return;
     if (!initialized) return;
     autoInstallOnDownloaded = true;
     try {
@@ -98,6 +105,7 @@ export async function downloadUpdate() {
 
 export function quitAndInstall() {
     if (isDev) return;
+    if (isPortable) return;
     if (!initialized) return;
     setImmediate(() => {
         for (const win of BrowserWindow.getAllWindows()) {
@@ -109,6 +117,7 @@ export function quitAndInstall() {
 
 export function scheduleStartupCheck(window: BrowserWindow, delayMs = 3000) {
     if (isDev) return;
+    if (isPortable) return;
     if (startupCheckScheduled) return;
     startupCheckScheduled = true;
 
