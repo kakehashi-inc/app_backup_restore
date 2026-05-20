@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-05-20
+
 ### Added
 
 - Auto-update via `electron-updater`: opt-in download flow with a Snackbar prompt, live download progress bar, and silent post-download install. The flow is fully no-op in development.
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Renamed the "Antigravity" editor entry to "Antigravity IDE" and updated the backed-up settings/MCP paths to the new `Antigravity IDE` / `.gemini/antigravity-ide` locations. Existing backups are not migrated automatically — please run the backup again.
 - Skip `electron-updater` initialization, scheduled startup check, and all updater calls when running as a Windows portable build (detected via `process.env.PORTABLE_EXECUTABLE_FILE`). This prevents the portable build from downloading the NSIS installer and silently installing the regular build to an unintended location. NSIS-installed builds and dev mode are unaffected.
 - Upgraded `@mui/material` and `@mui/icons-material` from 7.x to 9.x. Migrated deprecated v9 patterns: `Dialog#PaperProps` → `slotProps.paper`, `TextField#InputProps` → `slotProps.input`, and removed Stack system props (`alignItems` / `justifyContent`) by moving them into `sx`.
 - Set `moduleResolution: "bundler"` in the root tsconfig (required by MUI v9, which only ships `.d.mts` types) and pinned `moduleResolution: "node"` in the main-process tsconfig (CommonJS is incompatible with `bundler`).

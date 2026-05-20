@@ -13,7 +13,7 @@ export type ManagerId =
     | 'flatpak';
 
 export type PlatformId = 'win32' | 'darwin' | 'linux';
-export type VSCodeId = 'vscode' | 'cursor' | 'antigravity' | 'voideditor';
+export type VSCodeId = 'vscode' | 'cursor' | 'antigravity-ide' | 'voideditor';
 
 export type WingetItem = {
     PackageId: string;
