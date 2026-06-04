@@ -34,10 +34,11 @@ export const UpdateNotification: React.FC = () => {
     }, []);
 
     React.useEffect(() => {
-        if (state.status === 'available') {
+        // Re-surface the notification whenever a fresh actionable state arrives.
+        if (state.status === 'available' || state.status === 'error') {
             setDismissed(false);
         }
-    }, [state.status, state.version]);
+    }, [state.status, state.version, state.error]);
 
     const handleUpdate = async () => {
         try {
@@ -51,11 +52,11 @@ export const UpdateNotification: React.FC = () => {
         setDismissed(true);
     };
 
-    if (state.status === 'idle' || state.status === 'checking' || state.status === 'not-available' || state.status === 'error') {
+    if (state.status === 'idle' || state.status === 'checking' || state.status === 'not-available') {
         return null;
     }
 
-    if (state.status === 'available' && dismissed) {
+    if ((state.status === 'available' || state.status === 'error') && dismissed) {
         return null;
     }
 
@@ -90,6 +91,34 @@ export const UpdateNotification: React.FC = () => {
                             {t('updater.downloading', { progress })}
                         </Typography>
                         <LinearProgress variant='determinate' value={progress} />
+                    </Box>
+                </Alert>
+            );
+        }
+
+        if (state.status === 'error') {
+            return (
+                <Alert
+                    severity='error'
+                    sx={{ width: '100%' }}
+                    action={
+                        <Stack direction='row' spacing={1}>
+                            <Button color='inherit' size='small' onClick={handleLater}>
+                                {t('updater.close')}
+                            </Button>
+                            <Button color='inherit' size='small' variant='outlined' onClick={handleUpdate}>
+                                {t('updater.retry')}
+                            </Button>
+                        </Stack>
+                    }
+                >
+                    <Box sx={{ minWidth: 280 }}>
+                        <Typography variant='body2'>{t('updater.error')}</Typography>
+                        {state.error ? (
+                            <Typography variant='caption' sx={{ opacity: 0.8, wordBreak: 'break-word' }}>
+                                {state.error}
+                            </Typography>
+                        ) : null}
                     </Box>
                 </Alert>
             );

@@ -13,6 +13,12 @@ let currentState: UpdateState = { status: 'idle' };
 let initialized = false;
 let startupCheckScheduled = false;
 let autoInstallOnDownloaded = false;
+// True only between a user-initiated downloadUpdate() start and its completion/failure.
+// autoUpdater.on('error') is global: startup/background check failures (offline, etc.)
+// and download failures all land in the same handler. This flag lets the error handler
+// surface an error to the UI only when the user actually requested a download, and stay
+// silent for background check failures.
+let downloadRequested = false;
 
 function broadcast(state: UpdateState) {
     for (const win of BrowserWindow.getAllWindows()) {
@@ -64,6 +70,7 @@ export function initializeUpdater() {
     });
 
     autoUpdater.on('update-downloaded', info => {
+        downloadRequested = false;
         setState({ status: 'downloaded', version: info?.version ?? currentState.version });
         if (autoInstallOnDownloaded) {
             setTimeout(() => {
@@ -75,7 +82,18 @@ export function initializeUpdater() {
     autoUpdater.on('error', err => {
         console.error('[updater] error:', err);
         autoInstallOnDownloaded = false;
-        setState({ status: 'idle' });
+        if (downloadRequested) {
+            // Failure during a user-initiated download: surface it so the UI can offer retry/close.
+            downloadRequested = false;
+            setState({
+                status: 'error',
+                version: currentState.version,
+                error: err?.message ?? String(err),
+            });
+        } else {
+            // Background/startup check failure (offline, etc.): stay quiet and return to idle.
+            setState({ status: 'idle' });
+        }
     });
 }
 
@@ -95,11 +113,25 @@ export async function downloadUpdate() {
     if (isPortable) return;
     if (!initialized) return;
     autoInstallOnDownloaded = true;
+    downloadRequested = true;
+    // Reflect the download start immediately so the UI shows a progress bar even before
+    // the first 'download-progress' event arrives.
+    setState({ status: 'downloading', version: currentState.version, progress: 0 });
     try {
         await autoUpdater.downloadUpdate();
     } catch (err) {
+        // downloadUpdate() may reject directly, or the global 'error' handler may have
+        // already surfaced the failure. Only emit an error state here if it has not.
         autoInstallOnDownloaded = false;
         console.error('[updater] downloadUpdate failed:', err);
+        if (downloadRequested) {
+            downloadRequested = false;
+            setState({
+                status: 'error',
+                version: currentState.version,
+                error: err instanceof Error ? err.message : String(err),
+            });
+        }
     }
 }
 
