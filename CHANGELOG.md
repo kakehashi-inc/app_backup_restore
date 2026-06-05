@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [v0.3.1] - 2026-06-05
+
 ### Fixed
 
-- Fixed auto-update on macOS, where pressing "Update" did nothing and showed no progress or error. Updates now download and install correctly. (Note: macOS users on an older version need to install this version manually once; auto-update works from then on.)
+- Fixed auto-update on macOS. Previously, pressing "Update" could do nothing with no progress or error, or the download could finish but the app would still reopen on the old version after restarting. Updates now download, install, and relaunch into the new version reliably. (Note: macOS users on an older version need to install this version manually once; auto-update works from then on.)
 - When an update download fails, the app now shows an error message with "Retry" and "Close" buttons instead of silently doing nothing. A failed background check while offline no longer shows a spurious error.
 
 ### Added

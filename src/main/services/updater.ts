@@ -19,6 +19,9 @@ let autoInstallOnDownloaded = false;
 // surface an error to the UI only when the user actually requested a download, and stay
 // silent for background check failures.
 let downloadRequested = false;
+// True from quitAndInstall() until the process exits. While installing, the updater owns the
+// quit/relaunch sequence, so the window-all-closed handler must not call app.quit() and race it.
+let installing = false;
 
 function broadcast(state: UpdateState) {
     for (const win of BrowserWindow.getAllWindows()) {
@@ -44,7 +47,11 @@ export function initializeUpdater() {
     initialized = true;
 
     autoUpdater.autoDownload = false;
-    autoUpdater.autoInstallOnAppQuit = false;
+    // Must stay true on macOS: it makes MacUpdater stage the downloaded update into the
+    // native Squirrel updater right after the download finishes (synchronous handoff). With
+    // false, staging is deferred until quitAndInstall and runs asynchronously, racing the
+    // app's own quit sequence so the process can exit before the update is applied.
+    autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.logger = console;
 
     autoUpdater.on('checking-for-update', () => {
@@ -135,16 +142,19 @@ export async function downloadUpdate() {
     }
 }
 
+export function isUpdateInstalling(): boolean {
+    return installing;
+}
+
 export function quitAndInstall() {
     if (isDev) return;
     if (isPortable) return;
     if (!initialized) return;
-    setImmediate(() => {
-        for (const win of BrowserWindow.getAllWindows()) {
-            if (!win.isDestroyed()) win.close();
-        }
-        autoUpdater.quitAndInstall(false, true);
-    });
+    installing = true;
+    // Do NOT close windows here. On macOS, closing windows fires window-all-closed -> app.quit(),
+    // which can terminate the process before Squirrel finishes installing. Let the updater drive
+    // the quit and relaunch itself; window-all-closed is suppressed via isUpdateInstalling().
+    autoUpdater.quitAndInstall(false, true);
 }
 
 export function scheduleStartupCheck(window: BrowserWindow, delayMs = 3000) {
